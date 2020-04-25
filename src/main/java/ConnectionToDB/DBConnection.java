@@ -73,11 +73,15 @@ public class DBConnection {
         return null;
     }
 
+
+
+
     //testing connection in main DBConnection
     public static void main(String[] args) throws SQLException {
         connection = connect();
 
         System.out.println("Creating statement...");
+
         Statement stmt = connection.createStatement();
         String sql;
         sql = "SELECT * FROM users";
