@@ -1,4 +1,4 @@
-package ConnectionToDB;
+package connectiontodb;
 
 import java.io.FileInputStream;
 import java.io.IOException;
