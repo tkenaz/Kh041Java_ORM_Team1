@@ -15,30 +15,28 @@ public class ConnectionPoll {
         create();
     }
 
-    public ConnectionPoll() { }
+    public ConnectionPoll() {
+    }
 
 
-    public static void create(){
+    public static void create() {
         for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
             connectionPoolList.add(new DBConnection().connect());
         }
     }
 
     public static Connection getConnection() {
-        if (connectionPoolList.size() == 0){
-            System.out.println("get Connection1 ");
+        if (connectionPoolList.size() == 0) {
             return generateAdditionalConnections();
 
-        }
-        else {
+        } else {
             Connection connection = connectionPoolList.remove(connectionPoolList.size() - 1);
             usedConnectionsList.add(connection);
-            System.out.println("Connection sent2");
             return connection;
         }
     }
 
-    public static Connection generateAdditionalConnections(){
+    public static Connection generateAdditionalConnections() {
         for (int i = 0; i < INITIAL_POOL_SIZE / 2; i++) {
             connectionPoolList.add(new DBConnection().connect());
         }
@@ -51,7 +49,7 @@ public class ConnectionPoll {
     public static void releaseConnection(Connection connection) {
         connectionPoolList.add(connection);
         usedConnectionsList.remove(connection);
-        if(connectionPoolList.size() > 10){
+        if (connectionPoolList.size() > 10) {
             for (int i = 10; i < connectionPoolList.size(); i++) {
                 connectionPoolList.remove(i);
             }
@@ -62,9 +60,8 @@ public class ConnectionPoll {
         return connectionPoolList.size() + usedConnectionsList.size();
     }
 
-    public int getFreeConnectionPoolSize(){
+    public int getFreeConnectionPoolSize() {
         return connectionPoolList.size();
     }
-
 
 }
