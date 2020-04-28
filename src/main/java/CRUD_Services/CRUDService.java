@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class CRUDService {
     private Connection connection;
@@ -49,8 +50,50 @@ public class CRUDService {
             e.printStackTrace();
         }
     }
+    <T> void insert(T object) throws IllegalAccessException {
+        if (object.getClass().equals(entityClass)){
+            String columnName;
+            Field[] fields = entityClass.getDeclaredFields();
+            StringBuilder query = new StringBuilder("INSERT INTO ");
+            StringBuilder valuesForQuery = new StringBuilder(" VALUES (");
+            query.append(tableName).append(" (");
+            for(int i = 0; i < fields.length; i++){
+                if(fields[i].isAnnotationPresent(FieldName.class) && !fields[i].isAnnotationPresent(AutoIncremented.class)){
+                    columnName = fields[i].getAnnotation(FieldName.class).name();
+                    query.append(" ").append(columnName);
+                    if(!fields[i].isAccessible()){
+                        fields[i].setAccessible(true);
+                    }
+                    valuesForQuery.append(" '").append(fields[i].get(object).toString()).append("'");
+                    if(i < fields.length - 1){
+                        query.append(",");
+                        valuesForQuery.append(",");
+                    }
+                }
+            }
+            valuesForQuery.append(");");
+            query.append(")").append(valuesForQuery);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString());){
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        else throw new IllegalAccessException();
+    }
     void update(HashMap<String, String> columnsAndValuesToUpdate,String conditionalColumnName, String conditionValue){
-
+        StringBuilder query = new StringBuilder("UPDATE ");
+        query.append(tableName).append(" SET");
+        for(Map.Entry<String, String> pair : columnsAndValuesToUpdate.entrySet()){
+            query.append(" ").append(pair.getKey()).append(" = ").append(pair.getValue()).append(",");
+        }
+        query.deleteCharAt(query.length() - 1);
+        query.append(" WHERE ").append(conditionalColumnName).append(" = ").append(conditionValue).append(";");
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString());){
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
     void deleteById(int idToDelete){
         StringBuilder query = new StringBuilder("DELETE FROM ");
@@ -96,6 +139,18 @@ public class CRUDService {
         }
         ResultSet resultSet = null;
         try(PreparedStatement select = connection.prepareStatement(query.toString());) {
+            resultSet = select.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultSet;
+    }
+    ResultSet selectById(int id) {
+        StringBuilder query = new StringBuilder("SELECT * FROM ");
+        query.append(tableName).append("; WHERE id = ?;");
+        ResultSet resultSet = null;
+        try (PreparedStatement select = connection.prepareStatement(query.append(tableName).toString());) {
+            select.setInt(1, id);
             resultSet = select.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();
