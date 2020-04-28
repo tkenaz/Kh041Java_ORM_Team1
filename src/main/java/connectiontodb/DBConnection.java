@@ -69,11 +69,11 @@ public class DBConnection {
         return null;
     }
 
-    public String getDRIVER() {
+    public static String getDRIVER() {
         return DRIVER;
     }
 
-    public String getURL() {
+    public static String getURL() {
         return URL;
     }
 
