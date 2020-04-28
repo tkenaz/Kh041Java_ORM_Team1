@@ -19,9 +19,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7c551163-f241-4a1b-a5c0-5d116641d997" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/MainClass.java" afterDir="false" />
-    </list>
+    <list default="true" id="7c551163-f241-4a1b-a5c0-5d116641d997" name="Default Changelist" comment="Updated" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
