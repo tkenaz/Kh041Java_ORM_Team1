@@ -38,18 +38,23 @@ public class GeneratedValueHandler {
         return generatedKey;
     }
 
+
+
+    //check by Driver + Strategy
     private int getGeneratedValue(String tableName, String primaryKeyColumnName, GenerationType generationType) {
 
         if (DBConnection.getDRIVER().contains("postgresql")) {
             if (GenerationType.IDENTITY.equals(generationType)) {
                 return getGeneratedValueIdentityPostgreSQL(tableName, primaryKeyColumnName);
-
+            } else if (GenerationType.SEQUENCE.equals(generationType)){
+                return getGeneratedValueSequencePostgreSQL(tableName, primaryKeyColumnName);
             }
 
         }
 
         return 0;
     }
+
 
 
     //////////////////
@@ -124,6 +129,43 @@ public class GeneratedValueHandler {
 
                 generatedKey = rs.getInt(primaryKeyColumnName);
                 return generatedKey;
+
+            }
+
+            ConnectionPoll.releaseConnection(connection);
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+
+        } catch (NoPrimaryKeyException e) {
+            e.printStackTrace();
+        } finally {
+            ConnectionPoll.releaseConnection(connection);
+        }
+
+        return generatedKey;
+    }
+
+
+    private int getGeneratedValueSequencePostgreSQL(String tableName, String primaryKeyColumnName) {
+        Connection connection = ConnectionPoll.getConnection();
+        Statement stmt = null;
+        int generatedKey = 0;
+        try {
+
+            stmt = connection.createStatement();
+/// thing about the string  select id from users ORDER BY id DESC LIMIT 1;
+            String sql = "SELECT " + primaryKeyColumnName + " FROM " + tableName +
+                    " ORDER BY " + primaryKeyColumnName + "DESC LIMIT 1;";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            if (rs == null)
+                throw new NoPrimaryKeyException("There is no table with primary key found in " + DBConnection.getURL());
+
+            while (rs.next()) {
+
+                generatedKey = rs.getInt(primaryKeyColumnName);
+                return generatedKey + 1;
 
             }
 

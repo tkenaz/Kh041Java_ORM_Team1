@@ -19,7 +19,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7c551163-f241-4a1b-a5c0-5d116641d997" name="Default Changelist" comment="Updated" />
+    <list default="true" id="7c551163-f241-4a1b-a5c0-5d116641d997" name="Default Changelist" comment="Updated">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/generatedvaluehandler/GeneratedValueHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/generatedvaluehandler/GeneratedValueHandler.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -51,14 +55,34 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="project.structure.last.edited" value="Libraries" />
-    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.proportion" value="0.15429688" />
     <property name="project.structure.side.proportion" value="0.56041425" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\JavaTasks\Kh041Java_ORM_Team1" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="GeneratedValueHandler" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="generatedvaluehandler.GeneratedValueHandler" />
+      <module name="Kh041Java_ORM_Team1" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="generatedvaluehandler.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.GeneratedValueHandler" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -92,18 +116,38 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="249" y="0" key="SettingsEditor" timestamp="1587584662042">
+    <state x="249" y="0" key="#Project_Structure" timestamp="1588065402725">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state x="249" y="0" key="SettingsEditor/0.0.1536.834@0.0.1536.834" timestamp="1587584662042" />
+    <state x="249" y="0" key="#Project_Structure/0.0.1536.834@0.0.1536.834" timestamp="1588065402725" />
+    <state width="1493" height="145" key="GridCell.Tab.0.bottom" timestamp="1588066814780">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state width="1493" height="145" key="GridCell.Tab.0.bottom/0.0.1536.834@0.0.1536.834" timestamp="1588066814780" />
+    <state width="1493" height="145" key="GridCell.Tab.0.center" timestamp="1588066814780">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state width="1493" height="145" key="GridCell.Tab.0.center/0.0.1536.834@0.0.1536.834" timestamp="1588066814780" />
+    <state width="1493" height="145" key="GridCell.Tab.0.left" timestamp="1588066814780">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state width="1493" height="145" key="GridCell.Tab.0.left/0.0.1536.834@0.0.1536.834" timestamp="1588066814780" />
+    <state width="1493" height="145" key="GridCell.Tab.0.right" timestamp="1588066814780">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state width="1493" height="145" key="GridCell.Tab.0.right/0.0.1536.834@0.0.1536.834" timestamp="1588066814780" />
+    <state x="249" y="0" key="SettingsEditor" timestamp="1588067154312">
+      <screen x="0" y="0" width="1536" height="834" />
+    </state>
+    <state x="249" y="0" key="SettingsEditor/0.0.1536.834@0.0.1536.834" timestamp="1588067154312" />
     <state x="361" y="150" key="Vcs.Push.Dialog.v2" timestamp="1587631127874">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
     <state x="361" y="150" key="Vcs.Push.Dialog.v2/0.0.1536.834@0.0.1536.834" timestamp="1587631127874" />
-    <state x="498" y="309" width="540" height="222" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD" timestamp="1587584661260">
+    <state x="498" y="309" width="540" height="222" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD" timestamp="1588067142688">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
-    <state x="498" y="309" width="540" height="222" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD/0.0.1536.834@0.0.1536.834" timestamp="1587584661260" />
+    <state x="498" y="309" width="540" height="222" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD/0.0.1536.834@0.0.1536.834" timestamp="1588067142688" />
     <state x="538" y="319" key="git4idea.remote.GitConfigureRemotesDialog" timestamp="1587631117125">
       <screen x="0" y="0" width="1536" height="834" />
     </state>
