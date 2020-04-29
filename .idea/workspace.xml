@@ -20,8 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7c551163-f241-4a1b-a5c0-5d116641d997" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/tableCreation/TableCreator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tableCreation/TableCreator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/tableCreation/TableCreator.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +90,7 @@
       <workItem from="1587581856923" duration="1290000" />
       <workItem from="1587630760823" duration="461000" />
       <workItem from="1587851190787" duration="64000" />
-      <workItem from="1588001488733" duration="6471000" />
+      <workItem from="1588001488733" duration="8290000" />
     </task>
     <servers />
   </component>

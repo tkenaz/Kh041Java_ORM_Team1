@@ -27,26 +27,23 @@ import java.util.List;
 import java.util.Map;
 
 public class TableCreator {
-    static final Map<Class, String> mapping = new HashMap<Class, String>() {
-        {
-            put(int.class, "INT");
-            put(long.class, "LONG");
-            put(float.class, "FLOAT");
-            put(double.class, "DOUBLE");
-            put(String.class, "VARCHAR");
-            put(Date.class, "DATE");
-            put(BigDecimal.class, "DECIMAL");
-        }
-    };
-
+    static final Map<Class, String> mapping = new HashMap<>();
     private static final String CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS %s";
     private static final String NOT_NULL = "NOT NULL";
+
     List<Class> classes = new LinkedList<>();
     private DataSource dataSource;
 
     public TableCreator(DataSource dataSource) {
         this.dataSource = dataSource;
 
+        mapping.put(int.class, "INT");
+        mapping.put(long.class, "LONG");
+        mapping.put(float.class, "FLOAT");
+        mapping.put(double.class, "DOUBLE");
+        mapping.put(String.class, "VARCHAR");
+        mapping.put(Date.class, "DATE");
+        mapping.put(BigDecimal.class, "DECIMAL");
     }
 
     public static void createTable() throws SQLException {
