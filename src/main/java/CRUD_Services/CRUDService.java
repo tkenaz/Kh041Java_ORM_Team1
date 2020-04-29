@@ -3,9 +3,6 @@ package CRUD_Services;
 import annotations.AutoIncremented;
 import annotations.Entity;
 import annotations.FieldName;
-import annotations.Id;
-
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
