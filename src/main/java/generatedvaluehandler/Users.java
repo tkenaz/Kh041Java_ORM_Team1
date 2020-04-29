@@ -1,13 +1,15 @@
 package generatedvaluehandler;
 
 import annotations.GeneratedValue;
+import annotations.Id;
 import annotations.Table;
 import enums.GenerationType;
 
 @Table(name = "users")
 public class Users {
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
     private String name;
