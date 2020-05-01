@@ -3,6 +3,10 @@ package CRUD_Services;
 import annotations.AutoIncremented;
 import annotations.Entity;
 import annotations.FieldName;
+import annotations.Id;
+import enums.GenerationType;
+import generatedvaluehandler.GeneratedValueHandler;
+
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,6 +42,7 @@ public class CRUDService {
                     valuesForQuery.append(",");
                 }
             }
+            if(i == values.length - 1) break;
         }
         valuesForQuery.append(");");
         query.append(")").append(valuesForQuery);
@@ -47,33 +52,29 @@ public class CRUDService {
             e.printStackTrace();
         }
     }
-    <T> void insert(T object) throws IllegalAccessException {
-        if (object.getClass().equals(entityClass)){
-            String columnName;
-            Field[] fields = entityClass.getDeclaredFields();
-            StringBuilder query = new StringBuilder("INSERT INTO ");
-            StringBuilder valuesForQuery = new StringBuilder(" VALUES (");
-            query.append(tableName).append(" (");
-            for(int i = 0; i < fields.length; i++){
-                if(fields[i].isAnnotationPresent(FieldName.class) && !fields[i].isAnnotationPresent(AutoIncremented.class)){
-                    columnName = fields[i].getAnnotation(FieldName.class).name();
-                    query.append(" ").append(columnName);
-                    if(!fields[i].isAccessible()){
-                        fields[i].setAccessible(true);
-                    }
-                    valuesForQuery.append(" '").append(fields[i].get(object).toString()).append("'");
-                    if(i < fields.length - 1){
-                        query.append(",");
-                        valuesForQuery.append(",");
-                    }
-                }
+    void update(OurORM object) throws IllegalAccessException {
+        String query = QuerySamples.forUpdate(object);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString());){
+             preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+     void insert(OurORM object) throws IllegalAccessException, NoSuchFieldException {
+        if (object.getClass().isAnnotationPresent(Entity.class)){
+            int generatedId = new GeneratedValueHandler().getId(object);
+            object.setId(generatedId);
+            if(object.getClass().getDeclaredField("id").getAnnotation(Id.class).strategy() == GenerationType.IDENTITY){
+                update(object);
             }
-            valuesForQuery.append(");");
-            query.append(")").append(valuesForQuery);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString());){
-                preparedStatement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            else if(object.getClass().getDeclaredField("id").getAnnotation(Id.class).strategy() == GenerationType.SEQUENCE) {
+                String query = QuerySamples.forInsert(object);
+
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query);) {
+                    preparedStatement.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
         else throw new IllegalAccessException();
@@ -142,12 +143,12 @@ public class CRUDService {
         }
         return resultSet;
     }
-    ResultSet selectById(int id) {
+    ResultSet selectById(OurORM object) {
         StringBuilder query = new StringBuilder("SELECT * FROM ");
         query.append(tableName).append("; WHERE id = ?;");
         ResultSet resultSet = null;
         try (PreparedStatement select = connection.prepareStatement(query.append(tableName).toString());) {
-            select.setInt(1, id);
+            select.setInt(1, object.getId());
             resultSet = select.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();

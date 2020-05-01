@@ -29,7 +29,7 @@ public class GeneratedValueHandler {
 
     }
 
-    private int getId(Object object) {
+    public int getId(Object object) {
         String tableName = getTableName(object);
         String primaryKeyColumnName = getPrimaryKeyColumnName(tableName);
         GenerationType generationType = getGenerationType(object);
