@@ -1,4 +1,4 @@
-package generatedvaluehandler;
+package test_files;
 
 import annotations.GeneratedValue;
 import annotations.Id;
@@ -15,4 +15,6 @@ public class Users {
     private String name;
 
     private int age;
+
+
 }

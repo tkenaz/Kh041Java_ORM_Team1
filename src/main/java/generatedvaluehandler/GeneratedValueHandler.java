@@ -249,7 +249,6 @@ public class GeneratedValueHandler {
             return "INSERT INTO " + tableName + " DEFAULT VALUES RETURNING " + primaryKeyColumnName + " ;";
         }
         String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ");";
-        ;
 
         return sql;
     }
