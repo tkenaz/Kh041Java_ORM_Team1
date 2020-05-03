@@ -1,15 +1,16 @@
 package tableCreation;
 
-import annotations.Entity;
+import annotations.ForeignKey;
 import annotations.Id;
 import annotations.JoinColumn;
 import annotations.ManyToOne;
 import annotations.NotNull;
 import annotations.OneToMany;
 import annotations.OneToOne;
+import annotations.Table;
 import annotations.Varchar;
+import connectiontodb.ConnectionPoll;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -29,14 +30,14 @@ import java.util.Map;
 public class TableCreator {
     static final Map<Class, String> mapping = new HashMap<>();
     private static final String CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS %s";
+    private static final String CREATE_FOREGN_KEY_SQL = "ALTER TABLE %s";
     private static final String NOT_NULL = "NOT NULL";
+    private static String sourcePackagePath = "main.java";
 
     List<Class> classes = new LinkedList<>();
-    private DataSource dataSource;
 
-    public TableCreator(DataSource dataSource) {
-        this.dataSource = dataSource;
 
+    public TableCreator(Connection connection) {
         mapping.put(int.class, "INT");
         mapping.put(long.class, "LONG");
         mapping.put(float.class, "FLOAT");
@@ -47,16 +48,16 @@ public class TableCreator {
     }
 
     public static void createTable() throws SQLException {
-        TableCreator tableCreator = new TableCreator(ConnectionPoll.getConnection());//ToDo by MV: import class
-        List<Class> classes = tableCreator.instantiate(sourcePackage);//ToDo by MV: insert path to Entity package
+        TableCreator tableCreator = new TableCreator(ConnectionPoll.getConnection());
+        List<Class> classes = tableCreator.instantiateEntityClass(sourcePackagePath);
         for (Class singleClass : classes) {
             System.out.println(singleClass.getName());
             tableCreator.createTable(singleClass);
         }
     }
 
-    public List<Class> instantiate(String sourcePackage) {
-        try{
+    public List<Class> instantiateEntityClass(String sourcePackage) {
+        try {
             ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 
             String path = sourcePackage.replace('.', '/');
@@ -74,11 +75,11 @@ public class TableCreator {
 
                         Class classObject = Class.forName(sourcePackage + "." + className);
 
-                        if (classObject.isAnnotationPresent(Entity.class)) {
+                        if (classObject.isAnnotationPresent(Table.class)) {
                             classes.add(classObject);
                             System.out.println(classObject.getName());
                         }
-                    } else instantiate(String.join(".", sourcePackage, fileName));
+                    } else instantiateEntityClass(String.join(".", sourcePackage, fileName));
                 }
             }
 
@@ -89,41 +90,42 @@ public class TableCreator {
     }
 
     public void createTable(Class singleClass) throws SQLException {
-        Connection connection = dataSource.getConnection();
+        Connection connection = ConnectionPoll.getConnection();
         Statement statement = connection.createStatement();
         String sqlQuery = createQuery(singleClass, mapping, CREATE_TABLE_SQL);
 
         statement.executeUpdate(sqlQuery);
     }
 
+    public static void createTables() throws SQLException {
+        System.out.println("Scanning using Reflections:");
+        TableCreator tableCreator = new TableCreator(ConnectionPoll.getConnection());
+        List<Class> classes = tableCreator.instantiateEntityClass(sourcePackagePath);
+        for (Class aClass : classes) {
+            System.out.println(aClass.getName());
+            tableCreator.createTable(aClass);
+        }
+    }
+
     public <T> String createQuery(Class<T> singleClass, Map<Class, String> typeMap, String queryBase) {
         StringBuilder stringBuilder = new StringBuilder();
         Field[] fields = singleClass.getDeclaredFields();
-        stringBuilder.append(String.format(queryBase, singleClass.getAnnotation(Entity.class).tableName()));
+        stringBuilder.append(String.format(queryBase, singleClass.getAnnotation(Table.class).name()));
         stringBuilder.append(" (");
 
         for (Field field : fields) {
-            if (field.isAnnotationPresent(OneToMany.class)) {
+            if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ForeignKey.class)) {
                 continue;
             }
 
-            if (field.isAnnotationPresent(Id.class)){
+            if (field.isAnnotationPresent(Id.class)) {
                 stringBuilder.append(String.join(
                         " ",
                         field.getName(),
                         typeMap.get(field.getType()),
                         NOT_NULL,
                         "PRIMARY KEY"));
-                if (field.getAnnotation(Id.class).isAutoIncremented()) {
-                    stringBuilder.append(' ').append("AUTO_INCREMENT");
-                }
-            } else if (field.isAnnotationPresent(OneToOne.class) ||
-            field.isAnnotationPresent(ManyToOne.class)) {
-                stringBuilder.append(String.join(
-                        " ",
-                        field.getAnnotation(JoinColumn.class).name(),
-                        typeMap.get(long.class),
-                        NOT_NULL));
+
             } else {
                 stringBuilder.append(String.join(
                         " ",
@@ -139,6 +141,7 @@ public class TableCreator {
                     stringBuilder.append(' ')
                             .append(NOT_NULL);
                 }
+
             }
             stringBuilder.append(',');
         }
@@ -146,5 +149,50 @@ public class TableCreator {
         stringBuilder.append(");");
         System.out.println(stringBuilder.toString());
         return stringBuilder.toString();
+    }
+
+    public void createForeignKey(Class singleClass) throws SQLException {
+        Connection connection = ConnectionPoll.getConnection();
+        Statement statement = connection.createStatement();
+        String sqlQuery = createForeignKeyQuery(singleClass, mapping, CREATE_FOREGN_KEY_SQL);
+
+        statement.executeUpdate(sqlQuery);
+    }
+
+    public <T> String createForeignKeyQuery(Class<T> singleClass, Map<Class, String> typeMap, String queryBase) {
+
+        StringBuilder stringBuilder = new StringBuilder();
+        Field[] fields = singleClass.getDeclaredFields();
+        stringBuilder.append(String.format(queryBase, singleClass.getAnnotation(Table.class).name()));
+
+        stringBuilder.append(" ADD COLUMN ");
+
+        for (Field field : fields) {
+
+            if (field.isAnnotationPresent(ForeignKey.class)) {
+                stringBuilder.append(field.getAnnotation(ForeignKey.class).name())
+                        .append(" INT")
+                        .append(',')
+                        .append(' ');
+            }
+
+            if (field.isAnnotationPresent(OneToOne.class) ||
+                    field.isAnnotationPresent(ManyToOne.class)) {
+
+                stringBuilder.append(" ADD FOREIGN KEY (")
+                        .append(field.getName())
+                        .append(") REFERENCES ")
+                        .append(field.getAnnotation(ManyToOne.class).mappedBy())
+                        .append(" (id)");
+
+            }
+        }
+        stringBuilder.append(";");
+        System.out.println(stringBuilder.toString());
+        return stringBuilder.toString();
+    }
+
+    public void dropTable() {
+
     }
 }
