@@ -1,6 +1,5 @@
 package generatedvaluehandler;
 
-import annotations.GeneratedValue;
 import annotations.Id;
 import annotations.Table;
 import connectiontodb.ConnectionPoll;
@@ -28,6 +27,7 @@ public class GeneratedValueHandler {
      * 2.     IDENTITY, SEQUENCE principles are supported;
      */
 
+    public static GeneratedValueHandler generatedValueHandler = new GeneratedValueHandler();
     private static Map<String, Integer> primaryKeyMap = new HashMap();
 
 
@@ -85,8 +85,8 @@ public class GeneratedValueHandler {
         Field[] fields = object.getClass().getDeclaredFields();
 
         for (Field f : fields) {
-            if (f.isAnnotationPresent(GeneratedValue.class)) {
-                return f.getAnnotation(GeneratedValue.class).strategy();
+            if (f.isAnnotationPresent(Id.class)) {
+                return f.getAnnotation(Id.class).strategy();
             }
         }
         return GenerationType.SEQUENCE;

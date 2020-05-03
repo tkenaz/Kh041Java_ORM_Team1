@@ -36,7 +36,7 @@ public class ConnectionPoll {
         }
     }
 
-    public static Connection generateAdditionalConnections() {
+    private static Connection generateAdditionalConnections() {
         for (int i = 0; i < INITIAL_POOL_SIZE / 2; i++) {
             connectionPoolList.add(new DBConnection().connect());
         }

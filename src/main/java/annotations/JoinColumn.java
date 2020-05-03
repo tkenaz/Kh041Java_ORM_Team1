@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(value = ElementType.FIELD)
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface OneToMany {
-    String mappedBy();
+public @interface JoinColumn {
+    String name();
 }
