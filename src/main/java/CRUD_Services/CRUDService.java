@@ -104,16 +104,39 @@ public class CRUDService {
             e.printStackTrace();
         }
     }
-    void deleteByCondition(String conditionalColumnName, String conditionValue){
+    void deleteByCondition(String conditionalColumnName, Object conditionValue){
         StringBuilder query = new StringBuilder("DELETE FROM ");
         query.append(tableName);
         query.append(" WHERE ").append(conditionalColumnName).append(" = ");
-        query.append("'").append(conditionValue).append("';");
+        if(conditionValue instanceof Number){
+            query.append(conditionValue).append(";");
+        }
+        else {
+            query.append("'").append(conditionValue).append("';");
+        }
         try(PreparedStatement delete = connection.prepareStatement(query.toString());) {
             delete.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    ResultSet selectByCondition(String conditionalColumnName, Object conditionValue){
+        StringBuilder query = new StringBuilder("SELECT * FROM ");
+        query.append(tableName);
+        query.append(" WHERE ").append(conditionalColumnName).append(" = ");
+        if(conditionValue instanceof Number){
+            query.append(conditionValue).append(";");
+        }
+        else {
+            query.append("'").append(conditionValue).append("';");
+        }
+        ResultSet resultSet = null;
+        try(PreparedStatement select = connection.prepareStatement(query.toString());) {
+            resultSet = select.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultSet;
     }
     ResultSet selectAll(){
         StringBuilder query = new StringBuilder("SELECT * FROM ");
