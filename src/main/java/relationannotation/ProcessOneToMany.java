@@ -30,15 +30,13 @@ public class ProcessOneToMany {
                 }
             }
         }
-
         return listWithFields;
     }
 
 
-
     public static void saveOneToMany(Object object) {
         Connection connection1 = ConnectionPoll.getConnection();
-        CRUDService crudService = new CRUDService(connection1,object.getClass());
+        CRUDService crudService = new CRUDService(connection1, object.getClass());
         List<Object> childList = getOneToManyLists(object);
 
         for (Object s : childList) {
@@ -57,19 +55,14 @@ public class ProcessOneToMany {
             }
         }
 
-       // ConnectionPoll.releaseConnection(connection1);
-//        try {
-//            connection1.close();
-//        } catch (SQLException throwables) {
-//            throwables.printStackTrace();
-//        }
-    }
+        ConnectionPoll.releaseConnection(connection1);
 
+    }
 
 
     public static void updateOneToMany(Object object) {
         Connection connection = ConnectionPoll.getConnection();
-        CRUDService crudService = new CRUDService(connection,object.getClass());
+        CRUDService crudService = new CRUDService(connection, object.getClass());
         List<Object> childList = getOneToManyLists(object);
 
         for (Object s : childList) {
@@ -87,19 +80,13 @@ public class ProcessOneToMany {
                 }
             }
         }
-//        ConnectionPoll.releaseConnection(connection);
-//        try {
-//            connection.close();
-//        } catch (SQLException throwables) {
-//            throwables.printStackTrace();
-//        }
+        ConnectionPoll.releaseConnection(connection);
     }
 
-
-    public static void selectOneToMany(Object object){
+//?
+    public static void selectOneToMany(Object object) {
 
     }
-
 
 
 }

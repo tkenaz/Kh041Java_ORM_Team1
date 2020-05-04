@@ -1,13 +1,22 @@
 package crud_services;
 
+import annotations.Column;
 import annotations.Id;
+import annotations.OneToMany;
 import annotations.Table;
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import connectiontodb.ConnectionPoll;
 import enums.GenerationType;
 import generatedvaluehandler.GeneratedValueHandler;
 
+import test_files.*;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CRUDService {
@@ -89,7 +98,7 @@ public class CRUDService {
 
 
     public void insert(SimpleORMInterface object) throws IllegalAccessException, NoSuchFieldException {
-       //Connection c = ConnectionPoll.getConnection();
+        //Connection c = ConnectionPoll.getConnection();
         if (object.getClass().isAnnotationPresent(Table.class)) {
             int generatedId = new GeneratedValueHandler().getId(object);
             object.setId(generatedId);
@@ -100,7 +109,7 @@ public class CRUDService {
                     == GenerationType.SEQUENCE) {
                 String query = QuerySamples.forInsert(object);
 
-                try  {
+                try {
 
                     Statement statement = connection.createStatement();// = connection.prepareStatement(query);
                     statement.executeUpdate(query);
@@ -109,12 +118,8 @@ public class CRUDService {
                 }
             }
         } else throw new IllegalAccessException();
-//        ConnectionPoll.releaseConnection(c);
-//        try {
-//            c.close();
-//        } catch (SQLException throwables) {
-//            throwables.printStackTrace();
-//        }
+        ConnectionPoll.releaseConnection(connection);
+
     }
 
 
@@ -134,11 +139,11 @@ public class CRUDService {
     }
 
 
-    void delete(int idToDelete) {
+    void deleteById(int idToDelete) {
         StringBuilder query = new StringBuilder("DELETE FROM ");
         query.append(tableName);
-        query.append(" WHERE id = ?;");
-        try (PreparedStatement delete = connection.prepareStatement(query.toString());) {
+        query.append(" WHERE id = ? ;");
+        try (PreparedStatement delete = connection.prepareStatement(query.toString())) {
             delete.setInt(1, idToDelete);
             delete.executeUpdate();
         } catch (SQLException e) {
@@ -146,8 +151,8 @@ public class CRUDService {
         }
     }
 
-
-    void delete(String conditionalColumnName, String conditionValue) {
+    ////??? значение может быть инт и тогда кавычки не нужны
+    void deleteByCondition(String conditionalColumnName, String conditionValue) {
         StringBuilder query = new StringBuilder("DELETE FROM ");
         query.append(tableName);
         query.append(" WHERE ").append(conditionalColumnName).append(" = ");
@@ -159,17 +164,100 @@ public class CRUDService {
         }
     }
 
-    public ResultSet selectAll() {
+    //Alena's selectAll
+    public List<Object> selectAll(Class clazz) {
         StringBuilder query = new StringBuilder("SELECT * FROM ");
-        query.append(tableName).append(";");
-        ResultSet resultSet = null;
-        try (PreparedStatement select = connection.prepareStatement(query.append(tableName).toString());) {
+        query.append(tableName).append(" ;");
+        ResultSet resultSet;
+        List<Object> resultList = new ArrayList<>();
+        List<String> listOfColumns = getColumnNames(clazz);
+        try (PreparedStatement select = connection.prepareStatement(query.toString())) {
             resultSet = select.executeQuery();
+
+            try {
+                while (resultSet.next()) {
+                    Object object = Class.forName(clazz.getName()).newInstance();
+                    for (String l : listOfColumns) {
+                        Field field = object.getClass().getDeclaredField(l);
+                        field.setAccessible(true);
+                        field.set(object, resultSet.getObject(l));
+                        field.setAccessible(false);
+                    }
+                    resultList.add(object);
+                }
+
+
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException
+                    | NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+
+            return resultList;
+
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return resultSet;
+        return resultList;
     }
+
+
+    //Alena's update
+    public Object selectById(int id, Class clazz) {
+        StringBuilder query = new StringBuilder("SELECT * FROM ");
+        query.append(tableName).append(" WHERE id = ?;");
+        ResultSet resultSet;
+        Object object = null;
+        try (PreparedStatement select = connection.prepareStatement(query.toString())) {
+            select.setInt(1, id);
+            resultSet = select.executeQuery();
+
+            object = parseResultSet(resultSet, clazz);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return object;
+    }
+
+    //Alena's update
+    private Object parseResultSet(ResultSet resultSet, Class clazz) {
+
+        List<String> list = getColumnNames(clazz);
+
+        try {
+            Object object = Class.forName(clazz.getName()).newInstance();
+
+            while (resultSet.next()) {
+                for (String l : list) {
+                    Field field = object.getClass().getDeclaredField(l);
+                    field.setAccessible(true);
+                    field.set(object, resultSet.getObject(l));
+                    field.setAccessible(false);
+                }
+            }
+            return object;
+
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException
+                | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    //Alena's update
+    private List<String> getColumnNames(Class clazz) {
+        Field[] fields = clazz.getDeclaredFields();
+        List<String> list = new ArrayList<>();
+        for (Field f : fields) {
+            if (f.isAnnotationPresent(Column.class) || f.isAnnotationPresent(Id.class)) {
+                list.add(f.getName());
+            }
+        }
+        return list;
+    }
+
 
     public ResultSet selectAllWithOrder(String columnNameToOrderBy, boolean naturalOrder) {
         StringBuilder query = new StringBuilder("SELECT * FROM ");
@@ -188,17 +276,5 @@ public class CRUDService {
         return resultSet;
     }
 
-    public ResultSet selectById(SimpleORMInterface object) {
-        StringBuilder query = new StringBuilder("SELECT * FROM ");
-        query.append(tableName).append("; WHERE id = ?;");
-        ResultSet resultSet = null;
-        try (PreparedStatement select = connection.prepareStatement(query.append(tableName).toString());) {
-            select.setInt(1, object.getId());
-            resultSet = select.executeQuery();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return resultSet;
-    }
 
 }

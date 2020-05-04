@@ -22,7 +22,7 @@ public class Users implements SimpleORMInterface {
     @OneToMany(mappedBy = "users") //name of the table
     private List<Auto> autos;
 
-    @OneToMany(mappedBy = "users") //name of the table
+    //@OneToMany(mappedBy = "users") //name of the table
     private List<Books> books;
 
 

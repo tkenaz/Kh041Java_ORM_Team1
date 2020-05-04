@@ -47,7 +47,7 @@ public class ConnectionPoll {
 
 
     public static void releaseConnection(Connection connection) {
-        connectionPoolList.add(connection);
+        connectionPoolList.add(new DBConnection().connect());
         usedConnectionsList.remove(connection);
         if (connectionPoolList.size() > 10) {
             for (int i = 10; i < connectionPoolList.size(); i++) {

@@ -1,9 +1,6 @@
 package test_files;
 
-import annotations.Column;
-import annotations.Id;
-import annotations.JoinColumn;
-import annotations.Table;
+import annotations.*;
 import crud_services.SimpleORMInterface;
 import enums.GenerationType;
 
@@ -21,7 +18,7 @@ public class Auto implements SimpleORMInterface {
     @Column(name="color")
     private String color;
 
-    //    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(mappedBy = "users")
     @Column(name = "user_id")
     @JoinColumn(name = "user_id")
     private Users user;
