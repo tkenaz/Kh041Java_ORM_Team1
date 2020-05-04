@@ -22,7 +22,7 @@ public class Users implements SimpleORMInterface {
     @OneToMany(mappedBy = "users") //name of the table
     private List<Auto> autos;
 
-    //@OneToMany(mappedBy = "users") //name of the table
+    @OneToMany(mappedBy = "users") //name of the table
     private List<Books> books;
 
 
@@ -76,5 +76,10 @@ public class Users implements SimpleORMInterface {
 
     public List<Books> getBooks(){
         return books;
+    }
+
+    @Override
+    public String toString(){
+        return "Name: " + this.getName() + " Age: " + this.age + " Id: " + this.getId();
     }
 }

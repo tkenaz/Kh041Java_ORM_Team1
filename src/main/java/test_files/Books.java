@@ -44,11 +44,11 @@ public class Books implements SimpleORMInterface {
         return id;
     }
 
-    public String getModel() {
+    public String getBookName() {
         return bookName;
     }
 
-    public void setModel(String bookName) {
+    public void setBookName(String bookName) {
         this.bookName = bookName;
     }
 

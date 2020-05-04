@@ -1,9 +1,6 @@
 package crud_services;
 
-import annotations.Column;
-import annotations.Id;
-import annotations.OneToMany;
-import annotations.Table;
+import annotations.*;
 import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import connectiontodb.ConnectionPoll;
 import enums.GenerationType;
@@ -20,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CRUDService {
+
     private Connection connection;
     private Class<?> entityClass;
     private String tableName;
@@ -28,6 +26,25 @@ public class CRUDService {
         this.connection = connection;
         this.entityClass = entityClass;
         tableName = entityClass.getAnnotation(Table.class).name();
+    }
+
+    public ResultSet selectByCondition(String conditionalColumnName, Object conditionValue){
+        StringBuilder query = new StringBuilder("SELECT * FROM ");
+        query.append(tableName);
+        query.append(" WHERE ").append(conditionalColumnName).append(" = ");
+        if(conditionValue instanceof Number){
+            query.append(conditionValue).append(";");
+        }
+        else {
+            query.append("'").append(conditionValue).append("';");
+        }
+        ResultSet resultSet = null;
+        try(PreparedStatement select = connection.prepareStatement(query.toString());) {
+            resultSet = select.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultSet;
     }
 /*
     public void insert(Object object) {
@@ -85,11 +102,11 @@ public class CRUDService {
 //        }
 //    }
 
-
+//??? update does not work
     public void update(SimpleORMInterface object) throws IllegalAccessException {
         String query = QuerySamples.forUpdate(object);
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            System.out.println(query);
+            System.out.println(preparedStatement);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -98,7 +115,6 @@ public class CRUDService {
 
 
     public void insert(SimpleORMInterface object) throws IllegalAccessException, NoSuchFieldException {
-        //Connection c = ConnectionPoll.getConnection();
         if (object.getClass().isAnnotationPresent(Table.class)) {
             int generatedId = new GeneratedValueHandler().getId(object);
             object.setId(generatedId);
@@ -111,7 +127,7 @@ public class CRUDService {
 
                 try {
 
-                    Statement statement = connection.createStatement();// = connection.prepareStatement(query);
+                    Statement statement = connection.createStatement();
                     statement.executeUpdate(query);
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -123,20 +139,20 @@ public class CRUDService {
     }
 
 
-    void update(HashMap<String, String> columnsAndValuesToUpdate, String conditionalColumnName, String conditionValue) {
-        StringBuilder query = new StringBuilder("UPDATE ");
-        query.append(tableName).append(" SET");
-        for (Map.Entry<String, String> pair : columnsAndValuesToUpdate.entrySet()) {
-            query.append(" ").append(pair.getKey()).append(" = ").append(pair.getValue()).append(",");
-        }
-        query.deleteCharAt(query.length() - 1);
-        query.append(" WHERE ").append(conditionalColumnName).append(" = ").append(conditionValue).append(";");
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString());) {
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+//    void update(HashMap<String, String> columnsAndValuesToUpdate, String conditionalColumnName, String conditionValue) {
+//        StringBuilder query = new StringBuilder("UPDATE ");
+//        query.append(tableName).append(" SET");
+//        for (Map.Entry<String, String> pair : columnsAndValuesToUpdate.entrySet()) {
+//            query.append(" ").append(pair.getKey()).append(" = ").append(pair.getValue()).append(",");
+//        }
+//        query.deleteCharAt(query.length() - 1);
+//        query.append(" WHERE ").append(conditionalColumnName).append(" = ").append(conditionValue).append(";");
+//        try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString());) {
+//            preparedStatement.executeUpdate();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 
     void deleteById(int idToDelete) {
@@ -170,25 +186,30 @@ public class CRUDService {
         query.append(tableName).append(" ;");
         ResultSet resultSet;
         List<Object> resultList = new ArrayList<>();
-        List<String> listOfColumns = getColumnNames(clazz);
+        Map<String,String> listOfColumnsAndFields = getColumnAndFieldsNames(clazz);
         try (PreparedStatement select = connection.prepareStatement(query.toString())) {
             resultSet = select.executeQuery();
 
             try {
                 while (resultSet.next()) {
                     Object object = Class.forName(clazz.getName()).newInstance();
-                    for (String l : listOfColumns) {
-                        Field field = object.getClass().getDeclaredField(l);
+                    for (Map.Entry<String, String> l : listOfColumnsAndFields.entrySet()) {
+                        Field field = object.getClass().getDeclaredField(l.getKey());
                         field.setAccessible(true);
-                        field.set(object, resultSet.getObject(l));
+//                        if (l.getKey().equals(JoinColumn.class)){
+//                            object.getClass().getField("getId").setAccessible(true);
+//                            Object otherObject = resultSet.getObject(l.getValue());
+//                            object.getClass().getField("id").set("id",resultSet.getObject(l.getValue())) ;
+//                        } else {
+                            field.set(object, resultSet.getObject(l.getValue()));
+                        //}
                         field.setAccessible(false);
                     }
                     resultList.add(object);
                 }
 
 
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException
-                    | NoSuchFieldException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | NoSuchFieldException  e) {
                 e.printStackTrace();
             }
 
@@ -202,14 +223,15 @@ public class CRUDService {
     }
 
 
-    //Alena's update
+    //Alena's
     public Object selectById(int id, Class clazz) {
         StringBuilder query = new StringBuilder("SELECT * FROM ");
-        query.append(tableName).append(" WHERE id = ?;");
+        query.append(tableName).append(" WHERE id = ? ;");
         ResultSet resultSet;
         Object object = null;
         try (PreparedStatement select = connection.prepareStatement(query.toString())) {
             select.setInt(1, id);
+            System.out.println(select.toString());
             resultSet = select.executeQuery();
 
             object = parseResultSet(resultSet, clazz);
@@ -223,16 +245,16 @@ public class CRUDService {
     //Alena's update
     private Object parseResultSet(ResultSet resultSet, Class clazz) {
 
-        List<String> list = getColumnNames(clazz);
+        Map<String, String> map = getColumnAndFieldsNames(clazz);
 
         try {
             Object object = Class.forName(clazz.getName()).newInstance();
 
             while (resultSet.next()) {
-                for (String l : list) {
-                    Field field = object.getClass().getDeclaredField(l);
+                for (Map.Entry<String, String> m : map.entrySet()) {
+                    Field field = object.getClass().getDeclaredField(m.getKey());
                     field.setAccessible(true);
-                    field.set(object, resultSet.getObject(l));
+                    field.set(object, resultSet.getObject(m.getValue()));
                     field.setAccessible(false);
                 }
             }
@@ -246,16 +268,18 @@ public class CRUDService {
         return null;
     }
 
-    //Alena's update
-    private List<String> getColumnNames(Class clazz) {
+
+    private Map<String, String > getColumnAndFieldsNames(Class clazz) {
         Field[] fields = clazz.getDeclaredFields();
-        List<String> list = new ArrayList<>();
+        Map<String, String > map = new HashMap<>();
         for (Field f : fields) {
-            if (f.isAnnotationPresent(Column.class) || f.isAnnotationPresent(Id.class)) {
-                list.add(f.getName());
+            if (f.isAnnotationPresent(Column.class) ) {
+                map.put(f.getName(), f.getAnnotation(Column.class).name());
+            } else if (f.isAnnotationPresent(Id.class)){
+                map.put(f.getName(), f.getAnnotation(Id.class).name());
             }
         }
-        return list;
+        return map;
     }
 
 

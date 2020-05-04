@@ -56,13 +56,18 @@ public class SimpleORM {
 
     }
 
+//    public Object selectByPrimaryKey(){
+//        //selectByFK(Class<? extends SimpleORMInterface> withFieldManyToOne, SimpleORMInterface fk)
+//    }
 
-    public Object selectById(int id, Class clazz) {
+
+    public Object selectByRowId(int id, Class clazz) {
         Connection connection = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection, clazz);
+        Object object = crudService.selectById(id, clazz);
         ConnectionPoll.releaseConnection(connection);
 
-        return crudService.selectById(id, clazz);
+        return object;
     }
 
 
