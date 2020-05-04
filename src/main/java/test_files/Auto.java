@@ -18,17 +18,17 @@ public class Auto implements SimpleORMInterface {
     @Column(name="color")
     private String color;
 
+    //@Column(name = "user_id")
     @ManyToOne(mappedBy = "users")
-    @Column(name = "user_id")
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private Users user;
 
     public Auto() {
     }
 
-    public Auto(String model, String color) {
+    public Auto(String model, String colors_auto) {
         this.model = model;
-        this.color = color;
+        this.color = colors_auto;
     }
 
     public void setId(int id) {
@@ -65,6 +65,6 @@ public class Auto implements SimpleORMInterface {
 
     @Override
     public String toString() {
-        return color + " " + model + " owner " + user.getName();
+        return color + " " + model + " owner ";
     }
 }
