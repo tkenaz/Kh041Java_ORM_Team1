@@ -1,11 +1,12 @@
-package CRUD_Services;
+package relationannotations;
 
+import CRUD_Services.CRUDService;
+import CRUD_Services.OurORM;
 import annotations.*;
 import connectiontodb.ConnectionPoll;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class processManyToOne {
         return result;
     }
 
-    private void setUpCollectionofObjects(OurORM object, List<OurORM> list) throws IllegalAccessException {
+    private void setUpCollectionOfObjects(OurORM object, List<OurORM> list) throws IllegalAccessException {
         Field[] fields = object.getClass().getDeclaredFields();
         for(Field field : fields){
             field.setAccessible(true);
@@ -60,7 +61,7 @@ public class processManyToOne {
             }
             list.add(object);
         }
-        setUpCollectionofObjects(fk, list);
+        setUpCollectionOfObjects(fk, list);
         ConnectionPoll.releaseConnection(connection);
     }
 }

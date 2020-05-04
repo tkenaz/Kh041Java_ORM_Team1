@@ -120,7 +120,7 @@ public class CRUDService {
             e.printStackTrace();
         }
     }
-    ResultSet selectByCondition(String conditionalColumnName, Object conditionValue){
+    public ResultSet selectByCondition(String conditionalColumnName, Object conditionValue){
         StringBuilder query = new StringBuilder("SELECT * FROM ");
         query.append(tableName);
         query.append(" WHERE ").append(conditionalColumnName).append(" = ");
