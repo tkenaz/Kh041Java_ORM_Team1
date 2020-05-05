@@ -14,7 +14,7 @@ import java.util.List;
 
 public class processManyToOne {
 
-    private String getFKColumnName(Class<?> withFieldManyToOne){
+    private static String getFKColumnName(Class<?> withFieldManyToOne){
         String result = null;
         Field[] fields = withFieldManyToOne.getDeclaredFields();
         for(Field field : fields){
@@ -29,7 +29,7 @@ public class processManyToOne {
         return result;
     }
 
-    private void setUpCollectionOfObjects(SimpleORMInterface object, List<SimpleORMInterface> list) throws IllegalAccessException {
+    private static void setUpCollectionOfObjects(SimpleORMInterface object, List<SimpleORMInterface> list) throws IllegalAccessException {
         Field[] fields = object.getClass().getDeclaredFields();
         for(Field field : fields){
             field.setAccessible(true);
@@ -42,7 +42,9 @@ public class processManyToOne {
         }
     }
 
-    void selectByFK(Class<? extends SimpleORMInterface> withFieldManyToOne, SimpleORMInterface fk) throws SQLException, IllegalAccessException, InstantiationException {
+
+    //??
+    public static void selectByFK(Class<? extends SimpleORMInterface> withFieldManyToOne, SimpleORMInterface fk) throws SQLException, IllegalAccessException, InstantiationException {
         Connection connection = ConnectionPoll.getConnection();
         String tableName = withFieldManyToOne.getAnnotation(Table.class).name();
         CRUDService crudService = new CRUDService(connection, withFieldManyToOne);

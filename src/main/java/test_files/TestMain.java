@@ -8,39 +8,36 @@ public class TestMain {
 
     public static void main(String[] args) {
         SimpleORM simpleORM = new SimpleORM();
-
-////create user and save to table
-        Users user1 = new Users("Vanya2", 25);
-        simpleORM.save(user1);
 //
+////      create user and save to table
+//        Users user1 = new Users("Vanya2", 25);
+//        simpleORM.save(user1);
 //
-//// create 2 cars and assign them to user
+////       create 2 cars and assign them to user
+//        Auto auto1 = new Auto("Mazda2", "red");
+//        // Auto auto2 = new Auto("BMW", "black");
 //
+//        user1.addAuto(auto1);
+//        auto1.setUser(user1);
 //
-        Auto auto1 = new Auto("Mazda2", "red");
-        // Auto auto2 = new Auto("BMW", "black");
-
-        user1.addAuto(auto1);
-        auto1.setUser(user1);
-
-        Books book = new Books("Potter 22", 2005);
-        user1.addBooks(book);
-        book.setUser(user1);
-
-        System.out.println("____________________");
-        simpleORM.update(user1);
-
-        System.out.println("____________________");
-        auto1.setModel("Maserati");
-        simpleORM.update(user1);
-
-        //simpleORM.delete(user1);
-
-        simpleORM.delete(auto1);
-
+//        Books book = new Books("Potter 22", 2005);
+//        user1.addBooks(book);
+//        book.setUser(user1);
+//
+//        System.out.println("____________________");
+//        simpleORM.update(user1);
+//
+//        System.out.println("____________________");
+//        auto1.setModel("Maserati");
+//        simpleORM.update(user1);
+//
+//        //simpleORM.delete(user1);
+//
+//        simpleORM.delete(auto1);
+/////////////////////////////////////////////////////
 
 //        Users user2;
-//        user2 = (Users) simpleORM.selectByRowId(4, Users.class);
+//        user2 = (Users) simpleORM.selectByPrimaryId(4, Users.class);
 //        System.out.println("Get from table " + user2.toString());
 
        // simpleORM.delete(user2);
@@ -68,31 +65,38 @@ public class TestMain {
 
 
 
-        System.out.println("__________selectAllToObject method______________");
-        List<Auto> listAutos = (List<Auto>) (List<?>) simpleORM.selectAllToObject(Auto.class);
-        if (listAutos.size() != 0) {
-            for (Auto u : listAutos) {
-                System.out.println(u.getId() + " " + u.getModel() + " " + u.getColor() + " " );//+ u.getUser().getId());
-            }
-        }
+//        System.out.println("__________selectAllToObject method______________");
+//        List<Auto> listAutos = (List<Auto>) (List<?>) simpleORM.selectAllToObject(Auto.class);
+//        if (listAutos.size() != 0) {
+//            for (Auto u : listAutos) {
+//                System.out.println(u.getId() + " " + u.getModel() + " " + u.getColor() + " " );//+ u.getUser().getId());
+//            }
+//        }
+//
+//
+//        System.out.println("___________selectAllToString method_____________");
+//        List<String> listAutosString = (List<String>) (List<?>) simpleORM.selectAllToString(Auto.class);
+//        if (listAutosString.size() != 0) {
+//            for (String s : listAutosString) {
+//                System.out.println(s );
+//            }
+//        }
+//
+//
+//        System.out.println("___________selectAllToString method_____________");
+//        List<String> listUSersString = (List<String>) (List<?>) simpleORM.selectAllToString(Users.class);
+//        if (listUSersString.size() != 0) {
+//            for (String s : listUSersString) {
+//                System.out.println(s );
+//            }
+//        }
 
+        //testing selectObjectByForeignKey
+        Users userById = (Users) simpleORM.selectByPrimaryId(1, Users.class);
+        System.out.println(userById.toString());
 
-        System.out.println("___________selectAllToString method_____________");
-        List<String> listAutosString = (List<String>) (List<?>) simpleORM.selectAllToString(Auto.class);
-        if (listAutosString.size() != 0) {
-            for (String s : listAutosString) {
-                System.out.println(s );
-            }
-        }
-
-
-        System.out.println("___________selectAllToString method_____________");
-        List<String> listUSersString = (List<String>) (List<?>) simpleORM.selectAllToString(Users.class);
-        if (listUSersString.size() != 0) {
-            for (String s : listUSersString) {
-                System.out.println(s );
-            }
-        }
+        simpleORM.selectObjectByForeignKey(Auto.class, userById);
+        System.out.println(userById.getAutos().toString());
 
 
 //get user from table by id, set new name and update user in table
