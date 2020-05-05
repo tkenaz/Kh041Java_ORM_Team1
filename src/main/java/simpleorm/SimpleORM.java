@@ -2,12 +2,12 @@ package simpleorm;
 
 import annotations.Id;
 import annotations.Table;
-import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import connectiontodb.ConnectionPoll;
 import connectiontodb.DBConnection;
 import crud_services.CRUDService;
 import crud_services.SimpleORMInterface;
-import relationannotation.ProcessOneToMany;
+import relationannotation.*;
+
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -22,26 +22,23 @@ public class SimpleORM {
     private static List<String> existingTables = new ArrayList<>();
 
     /**
-     * Save external
+     * Save external method
      *
      * @param object
      */
 
     public void save(Object object) {
-// waiting for Marina's script
         if (!ifTableExists(object)) {
-//            call to create table
-
+            //TableCreator tableсreation ;.TableCreator
         }
+
         saveObject(object);
         ProcessOneToMany.saveOneToMany(object);
-        //ManyToOne...
-
     }
 
 
     /**
-     * Update external
+     * Update external method
      *
      * @param object
      */
@@ -58,6 +55,11 @@ public class SimpleORM {
 
     }
 
+    /**
+     * Delete  external method
+     * @param object
+     */
+
     public void delete(Object object){
         String tableName = object.getClass().getAnnotation(Table.class).name();
         Connection connection = ConnectionPoll.getConnection();
@@ -66,7 +68,12 @@ public class SimpleORM {
         crudService.deleteByIdCRUD(id);
     }
 
-
+    /**
+     *  Return object by id external method
+     * @param object
+     * does not return foreign key fiels, so that child object does not create its parent
+     * @return
+     */
     private int getObjectId(Object object){
         int objectId = 0;
         try {
@@ -84,8 +91,14 @@ public class SimpleORM {
         return objectId;
     }
 
+    /**
+     * Select the specific object by id
+     * @param id
+     * @param clazz
+     * @return
+     */
 
-    public Object selectByRowId(int id, Class clazz) {
+    public Object selectByPrimaryId(int id, Class clazz) {
         Connection connection = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection, clazz);
         Object object = crudService.selectById(id, clazz);
@@ -94,6 +107,12 @@ public class SimpleORM {
         return object;
     }
 
+    /**
+     * Select all rows and return their objects
+     * avoid foreign key so that child object does not create a parent
+     * @param clazz
+     * @return
+     */
 
     public List<Object> selectAllToObject(Class clazz) {
         Connection connection = ConnectionPoll.getConnection();
@@ -103,11 +122,27 @@ public class SimpleORM {
     }
 
 
+    /**
+     * Select all from table and return them as string
+     * @param clazz
+     * @return
+     */
     public List<String> selectAllToString(Class clazz) {
         Connection connection = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection, clazz);
         ConnectionPoll.releaseConnection(connection);
         return crudService.selectAllToString(clazz);
+    }
+
+
+
+    public void selectObjectByForeignKey(Class<? extends SimpleORMInterface> clazz, SimpleORMInterface object){
+        try {
+            processManyToOne.selectByFK(clazz, object);
+        } catch (SQLException | IllegalAccessException | InstantiationException throwables) {
+            throwables.printStackTrace();
+        }
+
     }
 
 
