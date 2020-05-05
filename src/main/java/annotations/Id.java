@@ -7,10 +7,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface GeneratedValue {
+@Target(value= ElementType.FIELD)
+@Retention(value= RetentionPolicy.RUNTIME)
+public @interface Id {
     GenerationType strategy() default GenerationType.SEQUENCE;
 
-    String name() default "";
+    String name();
 }
