@@ -14,7 +14,7 @@ public class Users implements SimpleORMInterface {
     private int id;
 
     @Column(name = "name")
-    private String name;
+    private String nameUSer;
 
     @Column(name = "age")
     private int age;
@@ -29,8 +29,8 @@ public class Users implements SimpleORMInterface {
     public Users() {
     }
 
-    public Users(String name, int age) {
-        this.name = name;
+    public Users(String nameUSer, int age) {
+        this.nameUSer = nameUSer;
         this.age = age;
         autos = new ArrayList<Auto>();
         books = new ArrayList<Books>();
@@ -54,8 +54,8 @@ public class Users implements SimpleORMInterface {
         this.age = age;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNameUSer(String nameUSer) {
+        this.nameUSer = nameUSer;
     }
 
     public int getAge() {
@@ -66,8 +66,8 @@ public class Users implements SimpleORMInterface {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getNameUSer() {
+        return nameUSer;
     }
 
     public List<Auto> getAutos(){
@@ -80,6 +80,6 @@ public class Users implements SimpleORMInterface {
 
     @Override
     public String toString(){
-        return "Name: " + this.getName() + " Age: " + this.age + " Id: " + this.getId();
+        return "Name: " + this.getNameUSer() + " Age: " + this.age + " Id: " + this.getId();
     }
 }

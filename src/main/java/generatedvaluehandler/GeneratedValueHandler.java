@@ -27,7 +27,7 @@ public class GeneratedValueHandler {
      * 2.     IDENTITY, SEQUENCE principles are supported;
      */
 
-    public static GeneratedValueHandler generatedValueHandler = new GeneratedValueHandler();
+    //public static GeneratedValueHandler generatedValueHandler = new GeneratedValueHandler();
     private static Map<String, Integer> primaryKeyMap = new HashMap();
 
 
@@ -41,6 +41,9 @@ public class GeneratedValueHandler {
         }
 
         int generatedKey = getGeneratedValue(tableName, primaryKeyColumnName, generationType);
+        if (generatedKey == 0){
+            generatedKey = 1;
+        }
         primaryKeyMap.put(tableName, generatedKey);
 
         return generatedKey;

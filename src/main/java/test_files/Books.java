@@ -21,6 +21,7 @@ public class Books implements SimpleORMInterface {
 
     @ManyToOne(mappedBy = "users")
     @JoinColumn(name = "users_id")
+    @ForeignKey(name = "users_id")
     private Users user;
 
     public Books() {
@@ -65,6 +66,6 @@ public class Books implements SimpleORMInterface {
 
     @Override
     public String toString() {
-        return size + " " + bookName + " owner " + user.getName();
+        return size + " " + bookName + " owner " + user.getNameUSer();
     }
 }
