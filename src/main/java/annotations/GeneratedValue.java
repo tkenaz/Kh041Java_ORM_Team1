@@ -11,6 +11,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GeneratedValue {
     GenerationType strategy() default GenerationType.SEQUENCE;
-
-    String name() default "";
 }

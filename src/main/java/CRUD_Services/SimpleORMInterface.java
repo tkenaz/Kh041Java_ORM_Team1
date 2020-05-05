@@ -1,6 +1,6 @@
 package CRUD_Services;
 
-public interface OurORM {
+public interface SimpleORMInterface {
     void setId(int id);
     int getId();
 }
