@@ -95,8 +95,8 @@ public class TestMain {
         Users userById = (Users) simpleORM.selectByPrimaryId(1, Users.class);
         System.out.println(userById.toString());
 
-        simpleORM.selectObjectByForeignKey(Auto.class, userById);
-        System.out.println(userById.getAutos().toString());
+//        simpleORM.selectObjectByForeignKey(Auto.class, userById);
+//        System.out.println(userById.getAutos().toString());
 
 
 //get user from table by id, set new name and update user in table
