@@ -1,6 +1,7 @@
 package relationannotation;
 
 
+import annotations.Id;
 import annotations.OneToMany;
 import connectiontodb.ConnectionPoll;
 import crud_services.CRUDService;
@@ -38,25 +39,20 @@ public class ProcessOneToMany {
         Connection connection1 = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection1, object.getClass());
         List<Object> childList = getOneToManyLists(object);
+        int primaryId = returnPrimaryKey( object);
+        String primaryTableIdName = returnPrimaryTableIdName(object);
+
 
         for (Object s : childList) {
             List<Object> list = new ArrayList<>();
             list.addAll(List.class.cast(s));
             if (list.size() > 0) {
                 for (Object o : list) {
-
-                    try {
-                        crudService.insert((SimpleORMInterface) o);
-                    } catch (IllegalAccessException | NoSuchFieldException e) {
-                        e.printStackTrace();
-                    }
-
+                    saveOrUpdateObject(o, primaryId, primaryTableIdName);
                 }
             }
         }
-
         ConnectionPoll.releaseConnection(connection1);
-
     }
 
 
@@ -64,28 +60,83 @@ public class ProcessOneToMany {
         Connection connection = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection, object.getClass());
         List<Object> childList = getOneToManyLists(object);
+        int primaryId = returnPrimaryKey( object);
+
+        String primaryTableIdName = returnPrimaryTableIdName(object);
 
         for (Object s : childList) {
             List<Object> list = new ArrayList<>();
             list.addAll(List.class.cast(s));
             if (list.size() > 0) {
                 for (Object o : list) {
-
-                    try {
-                        crudService.update((SimpleORMInterface) o);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-
+                    saveOrUpdateObject(o, primaryId, primaryTableIdName);
                 }
             }
         }
         ConnectionPoll.releaseConnection(connection);
     }
 
-//?
+    //?
     public static void selectOneToMany(Object object) {
 
+    }
+
+
+    private static void saveOrUpdateObject(Object object, int primaryId, String primaryTableIdName) {
+        Connection connection = ConnectionPoll.getConnection();
+        CRUDService crudService = new CRUDService(connection, object.getClass());
+
+        try {
+            Field[] fields = object.getClass().getDeclaredFields();
+            Field id = null;
+            for (Field f : fields) {
+                if (f.isAnnotationPresent(Id.class)) {
+                    id = f;
+                }
+            }
+            id.setAccessible(true);
+            if (Integer.parseInt(id.get(object).toString()) != 0 && !id.get(object).equals(null)) {
+                crudService.update((SimpleORMInterface) object, primaryId, primaryTableIdName);
+            } else {
+                crudService.insert((SimpleORMInterface) object, primaryId, primaryTableIdName);
+            }
+            id.setAccessible(false);
+            ConnectionPoll.releaseConnection(connection);
+
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private static int returnPrimaryKey(Object object) {
+        int id = 0;
+        try {
+            Field[] fields = object.getClass().getDeclaredFields();
+
+
+            for (Field f : fields) {
+                if (f.isAnnotationPresent(Id.class)) {
+                    f.setAccessible(true);
+                    id = Integer.parseInt(f.get(object).toString());
+                    f.setAccessible(false);
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return id;
+    }
+
+    private static String returnPrimaryTableIdName(Object object){
+        String primaryTableIdName = null;
+        Field[] fields = object.getClass().getDeclaredFields();
+        for (Field f : fields) {
+            if (f.isAnnotationPresent(Id.class)) {
+                primaryTableIdName = f.getName();
+            }
+        }
+        return primaryTableIdName;
     }
 
 

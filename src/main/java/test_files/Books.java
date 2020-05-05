@@ -1,10 +1,7 @@
 package test_files;
 
-import annotations.Column;
+import annotations.*;
 
-import annotations.Id;
-import annotations.JoinColumn;
-import annotations.Table;
 import crud_services.SimpleORMInterface;
 import enums.GenerationType;
 
@@ -16,24 +13,22 @@ public class Books implements SimpleORMInterface {
     @Id(strategy = GenerationType.SEQUENCE, name = "id")
     private int id;
 
-    @Column(name = "book")
+    @Column(name = "book_name")
     private String bookName;
 
-    @Column(name = "year")
-    private int year;
+    @Column(name = "book_size")
+    private int size;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id")
-    @Column(name = "user_id")
-    @JoinColumn(name = "user_id")
+    @ManyToOne(mappedBy = "users")
+    @JoinColumn(name = "users_id")
     private Users user;
 
     public Books() {
     }
 
-    public Books(String bookName, int year) {
+    public Books(String bookName, int size) {
         this.bookName = bookName;
-        this.year = year;
+        this.size = size;
     }
 
     public void setId(int id) {
@@ -52,12 +47,12 @@ public class Books implements SimpleORMInterface {
         this.bookName = bookName;
     }
 
-    public int getYear() {
-        return year;
+    public int getSize() {
+        return size;
     }
 
-    public void setYear(int year) {
-        this.year = year;
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public Users getUser() {
@@ -70,6 +65,6 @@ public class Books implements SimpleORMInterface {
 
     @Override
     public String toString() {
-        return year + " " + bookName + " owner " + user.getName();
+        return size + " " + bookName + " owner " + user.getName();
     }
 }

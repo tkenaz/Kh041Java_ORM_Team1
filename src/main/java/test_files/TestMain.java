@@ -1,6 +1,5 @@
 package test_files;
 
-import generatedvaluehandler.GeneratedValueHandler;
 import simpleorm.SimpleORM;
 
 import java.util.List;
@@ -8,56 +7,98 @@ import java.util.List;
 public class TestMain {
 
     public static void main(String[] args) {
-//        Users user = new Users("Vasya", 30);
-//        user.setId(GeneratedValueHandler.generatedValueHandler.getId(user));
-//        System.out.println(user.getId());
-//
-//        Auto auto1 = new Auto("Mazda", "black");
-//        user.addAuto(auto1);
-//        auto1.setId(GeneratedValueHandler.generatedValueHandler.getId(auto1));
-
-//        Books books = new Books("Book1", 1993);
-//        user.addBooks(books);
-
-//        System.out.println(auto1.getId());
-//        System.out.println(auto1.toString());
-//        System.out.println(user.getBooks());
-//        System.out.println("____________");
-
-//        ProcessOneToMany processOneToMany = new ProcessOneToMany();
-
-
-//        processOneToMany.saveOneToMany(user);
-
         SimpleORM simpleORM = new SimpleORM();
-        //simpleORM.save(auto1);///////////////????????CRUD
-        //simpleORM.save(user);
-        //simpleORM.selectById(129, Users.class);
-        //simpleORM.selectAll(user.getClass());
 
-
-//create user and save to table
-        Users user1 = new Users("Vasya2", 2);
-        user1.setId(GeneratedValueHandler.generatedValueHandler.getId(user1));
+////create user and save to table
+        Users user1 = new Users("Vanya2", 25);
         simpleORM.save(user1);
-
-// create 2 cars and assign them to user
-        Auto auto1 = new Auto("Mazda", "red");
-        Auto auto2 = new Auto("BMW", "black");
+//
+//
+//// create 2 cars and assign them to user
+//
+//
+        Auto auto1 = new Auto("Mazda2", "red");
+        // Auto auto2 = new Auto("BMW", "black");
 
         user1.addAuto(auto1);
-        user1.addAuto(auto2);
-
         auto1.setUser(user1);
-        auto2.setUser(user1);
 
+        Books book = new Books("Potter 22", 2005);
+        user1.addBooks(book);
+        book.setUser(user1);
+
+        System.out.println("____________________");
         simpleORM.update(user1);
+
+        System.out.println("____________________");
+        auto1.setModel("Maserati");
+        simpleORM.update(user1);
+
+        //simpleORM.delete(user1);
+
+        simpleORM.delete(auto1);
+
+
+//        Users user2;
+//        user2 = (Users) simpleORM.selectByRowId(4, Users.class);
+//        System.out.println("Get from table " + user2.toString());
+
+       // simpleORM.delete(user2);
+
+//                List<Users> list = (List<Users>) (List<?>) simpleORM.selectAll(Users.class);
+//        if (list.size() != 0) {
+//            for (Users u : list) {
+//                System.out.println(u.getId() + " " + u.getName() + " " + u.getAge());
+//            }
+//        }
+
+
+
+//        listAutos = (List<Auto>) (List<?>) simpleORM.selectAll(Auto.class);
+//        if (listAutos.size() != 0) {
+//            for (Auto u : listAutos) {
+//                System.out.println( u.getModel() + " " + u.getColor() + " " );
+//            }
+//        }
+//        System.out.println("____________________");
+//        user1.addAuto(auto2);
+//        auto2.setUser(user1);
+//        simpleORM.update(user1);
+
+
+
+
+        System.out.println("__________selectAllToObject method______________");
+        List<Auto> listAutos = (List<Auto>) (List<?>) simpleORM.selectAllToObject(Auto.class);
+        if (listAutos.size() != 0) {
+            for (Auto u : listAutos) {
+                System.out.println(u.getId() + " " + u.getModel() + " " + u.getColor() + " " );//+ u.getUser().getId());
+            }
+        }
+
+
+        System.out.println("___________selectAllToString method_____________");
+        List<String> listAutosString = (List<String>) (List<?>) simpleORM.selectAllToString(Auto.class);
+        if (listAutosString.size() != 0) {
+            for (String s : listAutosString) {
+                System.out.println(s );
+            }
+        }
+
+
+        System.out.println("___________selectAllToString method_____________");
+        List<String> listUSersString = (List<String>) (List<?>) simpleORM.selectAllToString(Users.class);
+        if (listUSersString.size() != 0) {
+            for (String s : listUSersString) {
+                System.out.println(s );
+            }
+        }
 
 
 //get user from table by id, set new name and update user in table
-        Users user2;
-        user2 = (Users) simpleORM.selectByRowId(1, Users.class);
-        System.out.println("Get from table " + user2.toString());
+//        Users user2;
+//        user2 = (Users) simpleORM.selectByRowId(1, Users.class);
+//        System.out.println("Get from table " + user2.toString());
 //       simpleORM.update(user2);
 
 
