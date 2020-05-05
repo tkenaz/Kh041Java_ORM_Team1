@@ -1,5 +1,6 @@
 package simpleorm;
 
+import annotations.Id;
 import annotations.Table;
 import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import connectiontodb.ConnectionPoll;
@@ -8,6 +9,7 @@ import crud_services.CRUDService;
 import crud_services.SimpleORMInterface;
 import relationannotation.ProcessOneToMany;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +34,7 @@ public class SimpleORM {
 
         }
         saveObject(object);
-        ProcessOneToMany.saveOneToMany(object); //Roma update many-to-one insert
+        ProcessOneToMany.saveOneToMany(object);
         //ManyToOne...
 
     }
@@ -51,14 +53,36 @@ public class SimpleORM {
 
         }
         updateObject(object);
-        ProcessOneToMany.updateOneToMany(object); //Roma update many-to-one insert
+        ProcessOneToMany.updateOneToMany(object);
         //ManyToOne...
 
     }
 
-//    public Object selectByPrimaryKey(){
-//        //selectByFK(Class<? extends SimpleORMInterface> withFieldManyToOne, SimpleORMInterface fk)
-//    }
+    public void delete(Object object){
+        String tableName = object.getClass().getAnnotation(Table.class).name();
+        Connection connection = ConnectionPoll.getConnection();
+        int id = getObjectId(object);
+        CRUDService crudService = new CRUDService(connection, object.getClass());
+        crudService.deleteByIdCRUD(id);
+    }
+
+
+    private int getObjectId(Object object){
+        int objectId = 0;
+        try {
+            Field[] fields = object.getClass().getDeclaredFields();
+            for(Field f : fields){
+                if (f.isAnnotationPresent(Id.class)){
+                    f.setAccessible(true);
+                    objectId = Integer.parseInt(f.get(object).toString());
+                    f.setAccessible(false);
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return objectId;
+    }
 
 
     public Object selectByRowId(int id, Class clazz) {
@@ -71,11 +95,19 @@ public class SimpleORM {
     }
 
 
-    public List<Object> selectAll(Class clazz) {
+    public List<Object> selectAllToObject(Class clazz) {
         Connection connection = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection, clazz);
         ConnectionPoll.releaseConnection(connection);
         return crudService.selectAll(clazz);
+    }
+
+
+    public List<String> selectAllToString(Class clazz) {
+        Connection connection = ConnectionPoll.getConnection();
+        CRUDService crudService = new CRUDService(connection, clazz);
+        ConnectionPoll.releaseConnection(connection);
+        return crudService.selectAllToString(clazz);
     }
 
 
@@ -141,28 +173,29 @@ public class SimpleORM {
         Connection connection = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection, object.getClass());
         try {
-            if (!connection.isClosed()) {
-
-                try {
-                    crudService.insert((SimpleORMInterface) object);
-                } catch (IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
+            Field[] fields = object.getClass().getDeclaredFields();
+            Field id = null;
+            for(Field f : fields){
+                if (f.isAnnotationPresent(Id.class)){
+                    id = f;
                 }
-
-                ConnectionPoll.releaseConnection(connection);
-
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.println("fail");
             }
-        } catch (SQLException e) {
+            id.setAccessible(true);
+
+            if (Integer.parseInt(id.get(object).toString()) != 0 && !id.get(object).equals(null)) {
+                crudService.update((SimpleORMInterface) object);
+            } else {
+                crudService.insert((SimpleORMInterface) object);
+            }
+            id.setAccessible(false);
+            ConnectionPoll.releaseConnection(connection);
+
+        } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
     }
+
+
 }
 
 

@@ -28,18 +28,17 @@ public class CRUDService {
         tableName = entityClass.getAnnotation(Table.class).name();
     }
 
-    public ResultSet selectByCondition(String conditionalColumnName, Object conditionValue){
+    public ResultSet selectByCondition(String conditionalColumnName, Object conditionValue) {
         StringBuilder query = new StringBuilder("SELECT * FROM ");
         query.append(tableName);
         query.append(" WHERE ").append(conditionalColumnName).append(" = ");
-        if(conditionValue instanceof Number){
+        if (conditionValue instanceof Number) {
             query.append(conditionValue).append(";");
-        }
-        else {
+        } else {
             query.append("'").append(conditionValue).append("';");
         }
         ResultSet resultSet = null;
-        try(PreparedStatement select = connection.prepareStatement(query.toString());) {
+        try (PreparedStatement select = connection.prepareStatement(query.toString());) {
             resultSet = select.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -102,7 +101,7 @@ public class CRUDService {
 //        }
 //    }
 
-//??? update does not work
+    //forUpdate fixed
     public void update(SimpleORMInterface object) throws IllegalAccessException {
         String query = QuerySamples.forUpdate(object);
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -117,6 +116,7 @@ public class CRUDService {
     public void insert(SimpleORMInterface object) throws IllegalAccessException, NoSuchFieldException {
         if (object.getClass().isAnnotationPresent(Table.class)) {
             int generatedId = new GeneratedValueHandler().getId(object);
+            System.out.println(generatedId);
             object.setId(generatedId);
             if (object.getClass().getDeclaredField("id").getAnnotation(Id.class).strategy()
                     == GenerationType.IDENTITY) {
@@ -155,7 +155,7 @@ public class CRUDService {
 //    }
 
 
-    void deleteById(int idToDelete) {
+    public void deleteByIdCRUD(int idToDelete) {
         StringBuilder query = new StringBuilder("DELETE FROM ");
         query.append(tableName);
         query.append(" WHERE id = ? ;");
@@ -168,17 +168,17 @@ public class CRUDService {
     }
 
     ////??? значение может быть инт и тогда кавычки не нужны
-    void deleteByCondition(String conditionalColumnName, String conditionValue) {
-        StringBuilder query = new StringBuilder("DELETE FROM ");
-        query.append(tableName);
-        query.append(" WHERE ").append(conditionalColumnName).append(" = ");
-        query.append("'").append(conditionValue).append("';");
-        try (PreparedStatement delete = connection.prepareStatement(query.toString());) {
-            delete.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+//    void deleteByCondition(String conditionalColumnName, String conditionValue) {
+//        StringBuilder query = new StringBuilder("DELETE FROM ");
+//        query.append(tableName);
+//        query.append(" WHERE ").append(conditionalColumnName).append(" = ");
+//        query.append("'").append(conditionValue).append("';");
+//        try (PreparedStatement delete = connection.prepareStatement(query.toString());) {
+//            delete.executeUpdate();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     //Alena's selectAll
     public List<Object> selectAll(Class clazz) {
@@ -186,7 +186,7 @@ public class CRUDService {
         query.append(tableName).append(" ;");
         ResultSet resultSet;
         List<Object> resultList = new ArrayList<>();
-        Map<String,String> listOfColumnsAndFields = getColumnAndFieldsNames(clazz);
+        Map<String, String> listOfColumnsAndFields = getColumnAndFieldsNames(clazz);
         try (PreparedStatement select = connection.prepareStatement(query.toString())) {
             resultSet = select.executeQuery();
 
@@ -196,26 +196,51 @@ public class CRUDService {
                     for (Map.Entry<String, String> l : listOfColumnsAndFields.entrySet()) {
                         Field field = object.getClass().getDeclaredField(l.getKey());
                         field.setAccessible(true);
-//                        if (l.getKey().equals(JoinColumn.class)){
-//                            object.getClass().getField("getId").setAccessible(true);
-//                            Object otherObject = resultSet.getObject(l.getValue());
-//                            object.getClass().getField("id").set("id",resultSet.getObject(l.getValue())) ;
-//                        } else {
-                            field.set(object, resultSet.getObject(l.getValue()));
-                        //}
+                        field.set(object, resultSet.getObject(l.getValue()));
                         field.setAccessible(false);
                     }
                     resultList.add(object);
                 }
-
-
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | NoSuchFieldException  e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
-
             return resultList;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultList;
+    }
 
 
+    public List<String> selectAllToString(Class clazz) {
+        StringBuilder query = new StringBuilder("SELECT * FROM ").append(tableName).append(" ;");
+        ResultSet resultSet;
+        String tempString = "";
+        List<String> resultList = new ArrayList<>();
+        Map<String, String> listOfColumnsAndFields = getColumnAndFieldsNames(clazz);
+
+        try (PreparedStatement select = connection.prepareStatement(query.toString())) {
+            resultSet = select.executeQuery();
+
+            while (resultSet.next()) {
+
+                Field[] fields = clazz.getDeclaredFields();
+                for (Field f : fields) {
+                    if (f.isAnnotationPresent(JoinColumn.class)) {
+                        tempString += "|" + resultSet.getInt(f.getAnnotation(JoinColumn.class).name()) + "\t|";
+                    }
+                }
+
+                for (Map.Entry<String, String> l : listOfColumnsAndFields.entrySet()) {
+                    tempString += "|" + resultSet.getString(l.getValue()) + "\t|";
+                }
+
+                if (tempString != null) {
+                    resultList.add(tempString);
+                    tempString = "";
+                }
+            }
+            return resultList;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -269,13 +294,13 @@ public class CRUDService {
     }
 
 
-    private Map<String, String > getColumnAndFieldsNames(Class clazz) {
+    private Map<String, String> getColumnAndFieldsNames(Class clazz) {
         Field[] fields = clazz.getDeclaredFields();
-        Map<String, String > map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         for (Field f : fields) {
-            if (f.isAnnotationPresent(Column.class) ) {
+            if (f.isAnnotationPresent(Column.class)) {
                 map.put(f.getName(), f.getAnnotation(Column.class).name());
-            } else if (f.isAnnotationPresent(Id.class)){
+            } else if (f.isAnnotationPresent(Id.class)) {
                 map.put(f.getName(), f.getAnnotation(Id.class).name());
             }
         }
@@ -283,22 +308,57 @@ public class CRUDService {
     }
 
 
-    public ResultSet selectAllWithOrder(String columnNameToOrderBy, boolean naturalOrder) {
-        StringBuilder query = new StringBuilder("SELECT * FROM ");
-        query.append(tableName).append(" ORDER BY ").append(columnNameToOrderBy);
-        if (!naturalOrder) {
-            query.append(" DESC;");
-        } else {
-            query.append(";");
-        }
-        ResultSet resultSet = null;
-        try (PreparedStatement select = connection.prepareStatement(query.toString());) {
-            resultSet = select.executeQuery();
+//    public ResultSet selectAllWithOrder(String columnNameToOrderBy, boolean naturalOrder) {
+//        StringBuilder query = new StringBuilder("SELECT * FROM ");
+//        query.append(tableName).append(" ORDER BY ").append(columnNameToOrderBy);
+//        if (!naturalOrder) {
+//            query.append(" DESC;");
+//        } else {
+//            query.append(";");
+//        }
+//        ResultSet resultSet = null;
+//        try (PreparedStatement select = connection.prepareStatement(query.toString());) {
+//            resultSet = select.executeQuery();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return resultSet;
+//    }
+
+    /////////////////////one for many
+    public void update(SimpleORMInterface object, int primaryId, String primaryTableIdName) throws IllegalAccessException {
+        String query = QuerySamples.forUpdate(object, primaryId, primaryTableIdName);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            System.out.println(preparedStatement);
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return resultSet;
     }
 
+
+    public void insert(SimpleORMInterface object, int primaryId, String primaryTableIdName) throws IllegalAccessException, NoSuchFieldException {
+        if (object.getClass().isAnnotationPresent(Table.class)) {
+            int generatedId = new GeneratedValueHandler().getId(object);
+            object.setId(generatedId);
+            if (object.getClass().getDeclaredField("id").getAnnotation(Id.class).strategy()
+                    == GenerationType.IDENTITY) {
+                update(object, primaryId, primaryTableIdName);
+            } else if (object.getClass().getDeclaredField("id").getAnnotation(Id.class).strategy()
+                    == GenerationType.SEQUENCE) {
+                String query = QuerySamples.forInsert(object, primaryId, primaryTableIdName);
+
+                try {
+
+                    Statement statement = connection.createStatement();
+                    statement.executeUpdate(query);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else throw new IllegalAccessException();
+        ConnectionPoll.releaseConnection(connection);
+
+    }
 
 }
