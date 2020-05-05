@@ -18,7 +18,7 @@ public class Auto implements SimpleORMInterface {
     @Column(name="color")
     private String color;
 
-    //@Column(name = "user_id")
+    @ForeignKey(name = "users_id")
     @ManyToOne(mappedBy = "users")
     @JoinColumn(name = "users_id")
     private Users user;

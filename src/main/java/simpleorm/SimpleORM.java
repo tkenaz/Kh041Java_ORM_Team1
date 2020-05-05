@@ -1,12 +1,14 @@
 package simpleorm;
 
 import annotations.Id;
+import annotations.ManyToOne;
 import annotations.Table;
 import connectiontodb.ConnectionPoll;
 import connectiontodb.DBConnection;
 import crud_services.CRUDService;
 import crud_services.SimpleORMInterface;
 import relationannotation.*;
+import tablecreation.*;
 
 
 import java.lang.reflect.Field;
@@ -28,10 +30,6 @@ public class SimpleORM {
      */
 
     public void save(Object object) {
-        if (!ifTableExists(object)) {
-            //TableCreator tableсreation ;.TableCreator
-        }
-
         saveObject(object);
         ProcessOneToMany.saveOneToMany(object);
     }
@@ -44,14 +42,8 @@ public class SimpleORM {
      */
 
     public void update(Object object) {
-// waiting for Marina's script
-        if (!ifTableExists(object)) {
-//            call to create table
-
-        }
         updateObject(object);
         ProcessOneToMany.updateOneToMany(object);
-        //ManyToOne...
 
     }
 
@@ -134,7 +126,27 @@ public class SimpleORM {
         return crudService.selectAllToString(clazz);
     }
 
+/*
 
+    public void addAnnotatedClass(Class clazz){
+        TableCreator tableCreator = new TableCreator();
+            try {
+                System.out.println(clazz.getName());
+                tableCreator.createTable(clazz.getName().getClass());
+
+                Field[] fields = clazz.getClass().getDeclaredFields();
+                for (Field f: fields) {
+                    if (f.isAnnotationPresent(ManyToOne.class)){
+                        tableCreator.createForeignKey(clazz.getClass());
+                    }
+                }
+
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+    }
+*/
 
     public void selectObjectByForeignKey(Class<? extends SimpleORMInterface> clazz, SimpleORMInterface object){
         try {
@@ -148,7 +160,7 @@ public class SimpleORM {
 
     ///INTERNAL METHODS
 
-    private boolean ifTableExists(Object object) {
+    private static boolean ifTableExists(Object object) {
         if (existingTables.size() > 0) {
             String tableName = object.getClass().getAnnotation(Table.class).name();
             System.out.println(tableName + " tablename that we got");
@@ -161,7 +173,7 @@ public class SimpleORM {
     }
 
 
-    private boolean ifTableExistsRequestToTable(Object object) {
+    private static boolean ifTableExistsRequestToTable(Object object) {
         String tableName = object.getClass().getAnnotation(Table.class).name();
         Connection connection = ConnectionPoll.getConnection();
         ResultSet resultSet;
