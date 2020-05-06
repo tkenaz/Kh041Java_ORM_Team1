@@ -45,6 +45,49 @@ public class CRUDService {
         }
         return resultSet;
     }
+
+//Roma's ManyToOne
+    public ArrayList<SimpleORMInterface> selectByConditionFK(String conditionalColumnName, Object conditionValue)
+            throws SQLException {
+        StringBuilder query = new StringBuilder("SELECT * FROM ");
+        query.append(tableName);
+        query.append(" WHERE ").append(conditionalColumnName).append(" = ");
+        if (conditionValue instanceof Number) {
+            query.append(conditionValue).append(";");
+        } else {
+            query.append("'").append(conditionValue).append("';");
+        }
+        ResultSet resultSet = null;
+        try (PreparedStatement select = connection.prepareStatement(query.toString());) {
+            resultSet = select.executeQuery();
+            return resultSetProcessing(resultSet);
+        } catch (SQLException | IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private ArrayList<SimpleORMInterface> resultSetProcessing(ResultSet rs)
+            throws SQLException, IllegalAccessException, InstantiationException {
+        ArrayList<SimpleORMInterface> list = new ArrayList<>();
+        SimpleORMInterface object;
+        while (rs.next()) {
+            //System.out.println(1);
+            object = (SimpleORMInterface) entityClass.newInstance();
+            Field[] fields = entityClass.getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                if (field.isAnnotationPresent(Column.class)) {
+                    field.set(object, rs.getObject(field.getAnnotation(Column.class).name()));
+                }
+                field.setAccessible(false);
+            }
+            list.add(object);
+        }
+        return list;
+    }
+    /// End of Roma's ManytoOne
+
 /*
     public void insert(Object object) {
         String columnName;

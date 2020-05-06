@@ -1,14 +1,12 @@
 package simpleorm;
 
 import annotations.Id;
-import annotations.ManyToOne;
 import annotations.Table;
 import connectiontodb.ConnectionPoll;
 import connectiontodb.DBConnection;
 import crud_services.CRUDService;
 import crud_services.SimpleORMInterface;
 import relationannotation.*;
-import tablecreation.*;
 
 
 import java.lang.reflect.Field;
@@ -20,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleORM {
+
+    //private static CRUDService simpleORM = new CRUDService();
 
     private static List<String> existingTables = new ArrayList<>();
 
@@ -49,10 +49,11 @@ public class SimpleORM {
 
     /**
      * Delete  external method
+     *
      * @param object
      */
 
-    public void delete(Object object){
+    public void delete(Object object) {
         String tableName = object.getClass().getAnnotation(Table.class).name();
         Connection connection = ConnectionPoll.getConnection();
         int id = getObjectId(object);
@@ -61,17 +62,17 @@ public class SimpleORM {
     }
 
     /**
-     *  Return object by id external method
-     * @param object
-     * does not return foreign key fiels, so that child object does not create its parent
+     * Return object by id external method
+     *
+     * @param object does not return foreign key fiels, so that child object does not create its parent
      * @return
      */
-    private int getObjectId(Object object){
+    private int getObjectId(Object object) {
         int objectId = 0;
         try {
             Field[] fields = object.getClass().getDeclaredFields();
-            for(Field f : fields){
-                if (f.isAnnotationPresent(Id.class)){
+            for (Field f : fields) {
+                if (f.isAnnotationPresent(Id.class)) {
                     f.setAccessible(true);
                     objectId = Integer.parseInt(f.get(object).toString());
                     f.setAccessible(false);
@@ -85,6 +86,7 @@ public class SimpleORM {
 
     /**
      * Select the specific object by id
+     *
      * @param id
      * @param clazz
      * @return
@@ -102,6 +104,7 @@ public class SimpleORM {
     /**
      * Select all rows and return their objects
      * avoid foreign key so that child object does not create a parent
+     *
      * @param clazz
      * @return
      */
@@ -116,6 +119,7 @@ public class SimpleORM {
 
     /**
      * Select all from table and return them as string
+     *
      * @param clazz
      * @return
      */
@@ -126,31 +130,15 @@ public class SimpleORM {
         return crudService.selectAllToString(clazz);
     }
 
-/*
 
-    public void addAnnotatedClass(Class clazz){
-        TableCreator tableCreator = new TableCreator();
-            try {
-                System.out.println(clazz.getName());
-                tableCreator.createTable(clazz.getName().getClass());
-
-                Field[] fields = clazz.getClass().getDeclaredFields();
-                for (Field f: fields) {
-                    if (f.isAnnotationPresent(ManyToOne.class)){
-                        tableCreator.createForeignKey(clazz.getClass());
-                    }
-                }
-
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-
-    }
-*/
-
-    public void selectObjectByForeignKey(Class<? extends SimpleORMInterface> clazz, SimpleORMInterface object){
+////??????????????
+    public void selectObjectByForeignKey(Class<? extends SimpleORMInterface> clazz, SimpleORMInterface object) {
         try {
-            processManyToOne.selectByFK(clazz, object);
+            Connection connection = ConnectionPoll.getConnection();
+            CRUDService crudService = new CRUDService(connection, clazz);
+            ProcessManyToOne processManyToOne = new ProcessManyToOne();
+            processManyToOne.selectByFK(clazz, object, crudService);
+            ConnectionPoll.releaseConnection(connection);
         } catch (SQLException | IllegalAccessException | InstantiationException throwables) {
             throwables.printStackTrace();
         }
@@ -158,12 +146,11 @@ public class SimpleORM {
     }
 
 
-    ///INTERNAL METHODS
+    /*               INTERNAL METHODS      */
 
     private static boolean ifTableExists(Object object) {
         if (existingTables.size() > 0) {
             String tableName = object.getClass().getAnnotation(Table.class).name();
-            System.out.println(tableName + " tablename that we got");
             for (String s : existingTables) {
                 if (tableName.equals(s))
                     return true;
@@ -222,8 +209,8 @@ public class SimpleORM {
         try {
             Field[] fields = object.getClass().getDeclaredFields();
             Field id = null;
-            for(Field f : fields){
-                if (f.isAnnotationPresent(Id.class)){
+            for (Field f : fields) {
+                if (f.isAnnotationPresent(Id.class)) {
                     id = f;
                 }
             }
@@ -242,6 +229,27 @@ public class SimpleORM {
         }
     }
 
+/*
+
+    public void addAnnotatedClass(Class clazz){
+        TableCreator tableCreator = new TableCreator();
+            try {
+                System.out.println(clazz.getName());
+                tableCreator.createTable(clazz.getName().getClass());
+
+                Field[] fields = clazz.getClass().getDeclaredFields();
+                for (Field f: fields) {
+                    if (f.isAnnotationPresent(ManyToOne.class)){
+                        tableCreator.createForeignKey(clazz.getClass());
+                    }
+                }
+
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+    }
+*/
 
 }
 
