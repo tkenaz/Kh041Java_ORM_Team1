@@ -4,9 +4,13 @@ import annotations.*;
 import crud_services.SimpleORMInterface;
 import enums.GenerationType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 //@Entity
 @Table(name = "autos")
+@ManyToMany(mappedBy = "can_use_auto")
 public class Auto implements SimpleORMInterface {
 
     @Id(strategy = GenerationType.SEQUENCE, name = "id")
@@ -15,13 +19,14 @@ public class Auto implements SimpleORMInterface {
     @Column(name = "model")
     private String model;
 
-    @Column(name="color")
+    @Column(name = "color")
     private String color;
 
     @ForeignKey(name = "users_id")
     @ManyToOne(mappedBy = "users")
     @JoinColumn(name = "users_id")
     private Users user;
+
 
     public Auto() {
     }
@@ -63,8 +68,12 @@ public class Auto implements SimpleORMInterface {
         this.user = user;
     }
 
+
     @Override
     public String toString() {
-        return color + " " + model + " owner ";
+        if (user != null)
+            return "[Auto: " + "id " + id + ", model " + model + ",color " + color + ", User " + user.getId() + "]";
+        else
+            return "[Auto: " + "id " + id + ", model " + model + ",color " + color + "]";
     }
 }

@@ -3,6 +3,7 @@ package relationannotation;
 import annotations.ManyToMany;
 import annotations.Table;
 import connectiontodb.ConnectionPoll;
+import connectiontodb.DBConnection;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -24,6 +25,7 @@ public class ManyToManyHandler {
     private static final String CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS";
     private static final String ALTER_SQL = "ALTER TABLE";
     private static final String DROP_TABLE_SQL = "DROP TABLE %s";
+    private static final String INSERT_M2M_SQL = "INSERT ";
 
     public ManyToManyHandler(Connection connection) {
     }
@@ -34,8 +36,40 @@ public class ManyToManyHandler {
         statement.executeUpdate(createM2MTableQuery(sourceClass, referenceClass));
         statement.executeUpdate(createForeignKeyM2MTableQuery(sourceClass, referenceClass));
         statement.executeUpdate(createUniqueM2MTableQuery(sourceClass, referenceClass));
-        System.out.println("The table " + createM2MTableName(sourceClass) + " has been created");
     }
+
+    public void insertM2M(Class sourceClass, Class referenceClass, int sourceClassParam, int referenceClassParam)
+            throws SQLException {
+        Connection connection = ConnectionPoll.getConnection();
+        Statement statement = connection.createStatement();
+
+        StringBuilder sqlQuery = new StringBuilder();
+        sqlQuery.append(INSERT_M2M_SQL);
+        if (DBConnection.getDRIVER().contains("mysql")) {
+            sqlQuery.append(" IGNORE ");
+        }
+        sqlQuery.append(" INTO ");
+        sqlQuery.append(createM2MTableName(sourceClass))
+                .append(" (")
+                .append(sourceClass.getSimpleName().toLowerCase())
+                .append("id, ")
+                .append(referenceClass.getSimpleName().toLowerCase())
+                .append("id) VALUES (")
+                .append(sourceClassParam)
+                .append(", ")
+                .append(referenceClassParam)
+                .append(')');
+        if (DBConnection.getDRIVER().contains("postgre")) {
+            sqlQuery.append(" ON CONFLICT (").append(sourceClass.getSimpleName().toLowerCase());
+            sqlQuery.append("id, ")
+                    .append(referenceClass.getSimpleName().toLowerCase())
+                    .append("id) DO NOTHING ");
+        }
+        sqlQuery.append(';');
+        System.out.println(sqlQuery);
+        statement.executeUpdate(sqlQuery.toString());
+    }
+
 
     public String createM2MTableQuery(Class sourceClass, Class referenceClass) {
 
@@ -52,6 +86,7 @@ public class ManyToManyHandler {
                 .append("Id")
                 .append(' ')
                 .append("INT);");
+
         return stringBuilder.toString();
     }
 

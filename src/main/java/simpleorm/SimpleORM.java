@@ -7,6 +7,7 @@ import connectiontodb.DBConnection;
 import crud_services.CRUDService;
 import crud_services.SimpleORMInterface;
 import relationannotation.*;
+import test_files.CanUseAuto;
 
 
 import java.lang.reflect.Field;
@@ -19,9 +20,41 @@ import java.util.List;
 
 public class SimpleORM {
 
-    //private static CRUDService simpleORM = new CRUDService();
 
     private static List<String> existingTables = new ArrayList<>();
+
+    private static boolean ifTableExists(Object object) {
+        if (existingTables.size() > 0) {
+            String tableName = object.getClass().getAnnotation(Table.class).name();
+            for (String s : existingTables) {
+                if (tableName.equals(s))
+                    return true;
+            }
+        }
+        return ifTableExistsRequestToTable(object);
+    }
+
+    private static boolean ifTableExistsRequestToTable(Object object) {
+        String tableName = object.getClass().getAnnotation(Table.class).name();
+        Connection connection = ConnectionPoll.getConnection();
+        ResultSet resultSet;
+
+        StringBuilder sql = new StringBuilder("SELECT TABLE_NAME FROM information_schema.tables");
+        sql.append(" WHERE table_schema = ? AND table_name = ? LIMIT 1;");
+
+        try (PreparedStatement checkTable = connection.prepareStatement(sql.toString())) {
+            checkTable.setString(1, DBConnection.getDBName());
+            checkTable.setString(2, tableName);
+            resultSet = checkTable.executeQuery();
+
+            while (resultSet.next()) {
+                return resultSet.getString("TABLE_NAME").equals(tableName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     /**
      * Save external method
@@ -33,7 +66,6 @@ public class SimpleORM {
         saveObject(object);
         ProcessOneToMany.saveOneToMany(object);
     }
-
 
     /**
      * Update external method
@@ -116,7 +148,6 @@ public class SimpleORM {
         return crudService.selectAll(clazz);
     }
 
-
     /**
      * Select all from table and return them as string
      *
@@ -130,8 +161,12 @@ public class SimpleORM {
         return crudService.selectAllToString(clazz);
     }
 
-
-////??????????????
+    /**
+     * selectObjectByForeignKey method select all child objects and assign them to parent object specified in method
+     *
+     * @param clazz
+     * @param object
+     */
     public void selectObjectByForeignKey(Class<? extends SimpleORMInterface> clazz, SimpleORMInterface object) {
         try {
             Connection connection = ConnectionPoll.getConnection();
@@ -145,41 +180,59 @@ public class SimpleORM {
 
     }
 
-
-    /*               INTERNAL METHODS      */
-
-    private static boolean ifTableExists(Object object) {
-        if (existingTables.size() > 0) {
-            String tableName = object.getClass().getAnnotation(Table.class).name();
-            for (String s : existingTables) {
-                if (tableName.equals(s))
-                    return true;
-            }
-        }
-        return ifTableExistsRequestToTable(object);
+    /**
+     * selectByManyToMany passes a list of all objects that corresponds to the specified classes
+     *
+     * @param sourceClass
+     * @param referenceClass
+     * @return
+     */
+    public List<Object> selectByManyToMany(Class sourceClass, Class referenceClass) {
+        Connection connection = ConnectionPoll.getConnection();
+        ManyToManySelect manyToManySelect = new ManyToManySelect(connection, CanUseAuto.class);
+        List<Object> list = manyToManySelect.selectAllfromM2MTable(sourceClass, referenceClass);
+        ConnectionPoll.releaseConnection(connection);
+        return list;
     }
 
 
-    private static boolean ifTableExistsRequestToTable(Object object) {
-        String tableName = object.getClass().getAnnotation(Table.class).name();
+
+    /*               INTERNAL METHODS      */
+
+    /**
+     * createManyToManyTable creats a separate table for many to many
+     *
+     * @param sourceClass
+     * @param referenceClass
+     */
+    public void createManyToManyTable(Class sourceClass, Class referenceClass) {
         Connection connection = ConnectionPoll.getConnection();
-        ResultSet resultSet;
-
-        StringBuilder sql = new StringBuilder("SELECT TABLE_NAME FROM information_schema.tables");
-        sql.append(" WHERE table_schema = ? AND table_name = ? LIMIT 1;");
-
-        try (PreparedStatement checkTable = connection.prepareStatement(sql.toString())) {
-            checkTable.setString(1, DBConnection.getDBName());
-            checkTable.setString(2, tableName);
-            resultSet = checkTable.executeQuery();
-
-            while (resultSet.next()) {
-                return resultSet.getString("TABLE_NAME").equals(tableName);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        ManyToManyHandler manyToManyHandler = new ManyToManyHandler(connection);
+        try {
+            manyToManyHandler.createMtMTable(sourceClass, referenceClass);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
-        return false;
+        ConnectionPoll.releaseConnection(connection);
+    }
+
+    /**
+     * insertManyToManyValues inserts values to Many to Many table
+     *
+     * @param sourceClass
+     * @param referenceClass
+     * @param sourceId
+     * @param referenceId
+     */
+    public void insertManyToManyValues(Class sourceClass, Class referenceClass, int sourceId, int referenceId) {
+        Connection connection = ConnectionPoll.getConnection();
+        ManyToManyHandler manyToManyHandler = new ManyToManyHandler(connection);
+        try {
+            manyToManyHandler.insertM2M(sourceClass, referenceClass, sourceId, referenceId);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        ConnectionPoll.releaseConnection(connection);
     }
 
     // update internal object
@@ -229,27 +282,6 @@ public class SimpleORM {
         }
     }
 
-/*
-
-    public void addAnnotatedClass(Class clazz){
-        TableCreator tableCreator = new TableCreator();
-            try {
-                System.out.println(clazz.getName());
-                tableCreator.createTable(clazz.getName().getClass());
-
-                Field[] fields = clazz.getClass().getDeclaredFields();
-                for (Field f: fields) {
-                    if (f.isAnnotationPresent(ManyToOne.class)){
-                        tableCreator.createForeignKey(clazz.getClass());
-                    }
-                }
-
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-
-    }
-*/
 
 }
 

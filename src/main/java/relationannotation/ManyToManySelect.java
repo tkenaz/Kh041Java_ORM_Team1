@@ -39,20 +39,12 @@ public class ManyToManySelect {
         referenceClassTableName = entityClass.getAnnotation(ManyToMany.class).mappedBy();
     }
 
-    /*
-    SELECT *
-    FROM users
-	JOIN roles_users ON users.id = roles_users.userid
-	JOIN roles ON roles_users.roleid = roles.id;
-
-* */
-
     public List<Object> selectAllfromM2MTable(Class sourceClass, Class referenceClass) {
 
         ResultSet resultSet;
         List<Object> resultList = new ArrayList<>();
-        Map<String,String> sourceClassColumnsAndFields = getColumnAndFieldsNames(sourceClass);
-        Map<String,String> referenceClassColumnsAndFields = getColumnAndFieldsNames(referenceClass);
+        Map<String, String> sourceClassColumnsAndFields = getColumnAndFieldsNames(sourceClass);
+        Map<String, String> referenceClassColumnsAndFields = getColumnAndFieldsNames(referenceClass);
         try (PreparedStatement select = connection.prepareStatement(createSelectAllQueryforM2MTable(sourceClass, referenceClass))) {
             resultSet = select.executeQuery();
 
@@ -77,7 +69,7 @@ public class ManyToManySelect {
                     resultList.add(sourceClassObject);
                     resultList.add(referenceClassObject);
                 }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | NoSuchFieldException  e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
             return resultList;
@@ -154,35 +146,6 @@ public class ManyToManySelect {
         return query.toString();
     }
 
-    /*
-    SELECT *
-    FROM users
-	JOIN roles_users ON users.id = roles_users.userid
-	JOIN roles ON roles_users.roleid = roles.id
-	WHERE userid = 2;
-
-    * */
-    /*public Object selectById(int id, Class clazz) {
-        StringBuilder query = new StringBuilder("SELECT * FROM ");
-        query.append(sourceClassTableName).append(" WHERE id = ? ;");
-        ResultSet resultSet;
-        Object object = null;
-        try (PreparedStatement select = connection.prepareStatement(query.toString())) {
-            select.setInt(1, id);
-            System.out.println(select.toString());
-            resultSet = select.executeQuery();
-
-            object = parseResultSet(resultSet, clazz);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return object;
-    }*/
-    /**/
-
-
-
     public Object parseResultSet(ResultSet resultSet, Class clazz) {
 
         Map<String, String> map = getColumnAndFieldsNames(clazz);
@@ -221,8 +184,6 @@ public class ManyToManySelect {
         }
         return map;
     }
-
-
 
 
 }
