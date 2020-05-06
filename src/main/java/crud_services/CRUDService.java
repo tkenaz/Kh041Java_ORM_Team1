@@ -46,7 +46,7 @@ public class CRUDService {
         return resultSet;
     }
 
-//Roma's ManyToOne
+    //Roma's ManyToOne
     public ArrayList<SimpleORMInterface> selectByConditionFK(String conditionalColumnName, Object conditionValue)
             throws SQLException {
         StringBuilder query = new StringBuilder("SELECT * FROM ");
@@ -72,13 +72,14 @@ public class CRUDService {
         ArrayList<SimpleORMInterface> list = new ArrayList<>();
         SimpleORMInterface object;
         while (rs.next()) {
-            //System.out.println(1);
             object = (SimpleORMInterface) entityClass.newInstance();
             Field[] fields = entityClass.getDeclaredFields();
             for (Field field : fields) {
                 field.setAccessible(true);
                 if (field.isAnnotationPresent(Column.class)) {
                     field.set(object, rs.getObject(field.getAnnotation(Column.class).name()));
+                } else if (field.isAnnotationPresent(Id.class)) {
+                    field.set(object, rs.getObject(field.getAnnotation(Id.class).name()));
                 }
                 field.setAccessible(false);
             }
@@ -88,63 +89,7 @@ public class CRUDService {
     }
     /// End of Roma's ManytoOne
 
-/*
-    public void insert(Object object) {
-        String columnName;
-        Field[] fields = entityClass.getDeclaredFields();
-        StringBuilder query = new StringBuilder("INSERT INTO ");
-        StringBuilder valuesForQuery = new StringBuilder(" VALUES (");
-        query.append(tableName).append(" (");
-        for (int i = 0; i < fields.length; i++) {
-            if (fields[i].getAnnotation(Column.class) != null) {
-                columnName = fields[i].getAnnotation(Column.class).name();
-                    query.append(columnName).append(",");
-                    //fields[i].get(object);
-                try {
-                    fields[i].setAccessible(true);
-                    valuesForQuery.append("'").append(fields[i].get(object)).append("',");
 
-                    fields[i].setAccessible(false);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        String v = valuesForQuery.toString().substring(0, valuesForQuery.length()-1);
-        String q = query.toString().substring(0, query.length()-1);
-        String sql = q + ") " + v + ") ;";
-
-       // String sql = QuerySamples.forInsert(object);
-        try  {
-            Statement statement = connection.prepareStatement(sql);
-            System.out.println(sql);
-            statement.executeUpdate(sql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    */
-
-
-//    public void insert(OurORM object) {
-//        String sql = null;
-//        try {
-//            sql = QuerySamples.forInsert(object);
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        }
-//
-//        // String sql = QuerySamples.forInsert(object);
-//        try  {
-//            Statement statement = connection.prepareStatement(sql);
-//            System.out.println(sql);
-//            statement.executeUpdate(sql);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    //forUpdate fixed
     public void update(SimpleORMInterface object) throws IllegalAccessException {
         String query = QuerySamples.forUpdate(object);
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -180,22 +125,6 @@ public class CRUDService {
         ConnectionPoll.releaseConnection(connection);
 
     }
-
-
-//    void update(HashMap<String, String> columnsAndValuesToUpdate, String conditionalColumnName, String conditionValue) {
-//        StringBuilder query = new StringBuilder("UPDATE ");
-//        query.append(tableName).append(" SET");
-//        for (Map.Entry<String, String> pair : columnsAndValuesToUpdate.entrySet()) {
-//            query.append(" ").append(pair.getKey()).append(" = ").append(pair.getValue()).append(",");
-//        }
-//        query.deleteCharAt(query.length() - 1);
-//        query.append(" WHERE ").append(conditionalColumnName).append(" = ").append(conditionValue).append(";");
-//        try (PreparedStatement preparedStatement = connection.prepareStatement(query.toString());) {
-//            preparedStatement.executeUpdate();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
 
     public void deleteByIdCRUD(int idToDelete) {
@@ -350,25 +279,7 @@ public class CRUDService {
         return map;
     }
 
-
-//    public ResultSet selectAllWithOrder(String columnNameToOrderBy, boolean naturalOrder) {
-//        StringBuilder query = new StringBuilder("SELECT * FROM ");
-//        query.append(tableName).append(" ORDER BY ").append(columnNameToOrderBy);
-//        if (!naturalOrder) {
-//            query.append(" DESC;");
-//        } else {
-//            query.append(";");
-//        }
-//        ResultSet resultSet = null;
-//        try (PreparedStatement select = connection.prepareStatement(query.toString());) {
-//            resultSet = select.executeQuery();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return resultSet;
-//    }
-
-    /////////////////////one for many
+    //one for many
     public void update(SimpleORMInterface object, int primaryId, String primaryTableIdName) throws IllegalAccessException {
         String query = QuerySamples.forUpdate(object, primaryId, primaryTableIdName);
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {

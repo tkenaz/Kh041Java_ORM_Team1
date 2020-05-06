@@ -1,10 +1,12 @@
 package test_files;
 
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 import simpleorm.SimpleORM;
 import tablecreation.TableCreator;
 
 import javax.jws.soap.SOAPBinding;
 import java.sql.SQLException;
+import java.sql.SQLOutput;
 import java.util.List;
 
 public class TestMain {
@@ -13,17 +15,15 @@ public class TestMain {
 
         SimpleORM simpleORM = new SimpleORM();
 
-//        simpleORM.addAnnotatedClass(Users.class);
-//        simpleORM.addAnnotatedClass(Auto.class);
-//        simpleORM.addAnnotatedClass(Books.class);
-
         TableCreator tableCreator = new TableCreator();
         try {
             tableCreator.createTable(Users.class);
             tableCreator.createTable(Auto.class);
             tableCreator.createTable(Books.class);
+            tableCreator.createTable(CanUseAuto.class);
             tableCreator.createForeignKey(Auto.class);
             tableCreator.createForeignKey(Books.class);
+
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -58,33 +58,52 @@ public class TestMain {
 //        simpleORM.delete(auto1);
 /////////////////////////////////////////////////////
         Users user3 = (Users) simpleORM.selectByPrimaryId(1, Users.class);
-        System.out.println(user3.toString());
+        System.out.println("User: " + user3.toString());
 
+        //simpleORM.selectObjectByForeignKey(Auto.class, user3);
+        //System.out.println("Users auto: " + user3.getAutos().toString());
+        //Auto autoShared = user3.getAutos().get(0);
+        //System.out.println(autoShared.getId()+ " is the car's id");
+
+
+        //
         simpleORM.selectObjectByForeignKey(Auto.class, user3);
+        Auto autoForUser3 = user3.getAutos().get(0);
+        System.out.println(autoForUser3.toString());
 
-        for (Auto a:user3.getAutos()) {
-            System.out.println(a.toString());
-        }
+        //Auto autoForUser3 = new Auto("BMW", "white");
+        //user3.addAuto(autoForUser3);
+        //autoForUser3.setUser(user3);
+        //System.out.println("Auto: " + autoForUser3.toString());
+//        simpleORM.save(user3);
+//
 
-
-
-
-
-
-
-
-
+        //autoForUser3.setUser(user3);
 
 
+        System.out.println("____________Many TO Many create_____________");
+        simpleORM.createManyToManyTable(Auto.class, CanUseAuto.class);
 
 
+        CanUseAuto kat = (CanUseAuto) simpleORM.selectByPrimaryId(1, CanUseAuto.class);
+        CanUseAuto mom = (CanUseAuto) simpleORM.selectByPrimaryId(2, CanUseAuto.class);
+        CanUseAuto dad = (CanUseAuto) simpleORM.selectByPrimaryId(3, CanUseAuto.class);
+
+        System.out.println(autoForUser3.getId() + "   " + kat.getId());
 
 
+        System.out.println("____________Many TO Many insert_____________");
+
+        simpleORM.insertManyToManyValues(Auto.class, CanUseAuto.class, autoForUser3.getId(), kat.getId());
+        simpleORM.insertManyToManyValues(Auto.class, CanUseAuto.class, autoForUser3.getId(), mom.getId());
+        simpleORM.insertManyToManyValues(Auto.class, CanUseAuto.class, autoForUser3.getId(), dad.getId());
 
 
-
-
-
+//        List<Object> list = simpleORM.selectByManyToMany(Auto.class, CanUseAuto.class);
+//        for (Object o : list ) {
+//            System.out.println(o.toString());
+//        }
+        System.out.println(simpleORM.selectByManyToMany(Auto.class, CanUseAuto.class));
 
 
 //        Users user2;

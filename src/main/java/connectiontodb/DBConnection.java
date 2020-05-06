@@ -80,7 +80,7 @@ public class DBConnection {
     public static String getDBName() {
         String[] division1 = URL.split("\\/*?\\?");
         String[] division2 = division1[0].split("/");
-        return division2[division2.length-1];
+        return division2[division2.length - 1];
     }
 
 }

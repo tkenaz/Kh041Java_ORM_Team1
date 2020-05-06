@@ -7,8 +7,9 @@ import enums.GenerationType;
 import java.util.ArrayList;
 import java.util.List;
 
-@Table(name = "users")
-public class Users implements SimpleORMInterface {
+@Table(name = "can_use_auto")
+@ManyToMany(mappedBy = "autos")
+public class CanUseAuto implements SimpleORMInterface {
 
     @Id(strategy = GenerationType.SEQUENCE, name = "id")
     private int id;
@@ -20,29 +21,22 @@ public class Users implements SimpleORMInterface {
     private int age;
 
     @OneToMany(mappedBy = "users") //name of the table
-    private List<Auto> autos = new ArrayList<>();
-
-    @OneToMany(mappedBy = "users") //name of the table
-    private List<Books> books = new ArrayList<>();
+    private List<Auto> autos;
 
 
-    public Users() {
+    public CanUseAuto() {
     }
 
-    public Users(String name, int age) {
-        this.nameUSer = name;
+    public CanUseAuto(String nameUSer, int age) {
+        this.nameUSer = nameUSer;
         this.age = age;
+        autos = new ArrayList<Auto>();
     }
 
     public void addAuto(Auto auto) {
-        auto.setUser(this);
         autos.add(auto);
     }
 
-    public void addBooks(Books book) {
-        book.setUser(this);
-        books.add(book);
-    }
 
     public void setId(int id) {
         this.id = id;
@@ -72,12 +66,15 @@ public class Users implements SimpleORMInterface {
         return autos;
     }
 
-    public List<Books> getBooks() {
-        return books;
+    public void setAutos(Auto auto) {
+        autos.add(auto);
     }
+
 
     @Override
     public String toString() {
         return "Name: " + this.getNameUSer() + " Age: " + this.age + " Id: " + this.getId();
     }
 }
+
+

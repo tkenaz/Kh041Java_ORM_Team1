@@ -32,18 +32,12 @@ public class QuerySamples {
                 }
             }
         }
-//        String valueString = valuesForQuery.toString();
-//        String queryString = query.toString();
-//        String sql = queryString.substring(0, queryString.length() - 1) + ") " +
-//                valueString.substring(0, valueString.length() - 1) + ");";
-//
-//        System.out.println("Q in Query sample: " + sql);
-//        return sql;
-        if (query.charAt(query.length()-1) == ','){
-            query.deleteCharAt(query.length()-1);
+
+        if (query.charAt(query.length() - 1) == ',') {
+            query.deleteCharAt(query.length() - 1);
         }
-        if (valuesForQuery.charAt(valuesForQuery.length()-1) == ','){
-            valuesForQuery.deleteCharAt(valuesForQuery.length()-1);
+        if (valuesForQuery.charAt(valuesForQuery.length() - 1) == ',') {
+            valuesForQuery.deleteCharAt(valuesForQuery.length() - 1);
         }
         query.append(") ").append(valuesForQuery).append(");");
         System.out.println("Q in Query sample: " + query);
@@ -80,9 +74,9 @@ public class QuerySamples {
                 columnName = fields[i].getAnnotation(JoinColumn.class).name();
                 String primaryTableName = fields[i].getAnnotation(ManyToOne.class).mappedBy();
                 query.append(" ").append(columnName);
-                    valuesForQuery.append(" ( SELECT ").append(primaryTableIdName).append(" FROM ");
-                    valuesForQuery.append(primaryTableName).append(" WHERE ").append(primaryTableIdName).append(" = ");
-                    valuesForQuery.append(primaryKey).append(")");
+                valuesForQuery.append(" ( SELECT ").append(primaryTableIdName).append(" FROM ");
+                valuesForQuery.append(primaryTableName).append(" WHERE ").append(primaryTableIdName).append(" = ");
+                valuesForQuery.append(primaryKey).append(")");
                 if (i < fields.length - 1) {
                     query.append(",");
                     valuesForQuery.append(",");
@@ -90,16 +84,12 @@ public class QuerySamples {
             }
 
         }
-        if (query.charAt(query.length()-1) == ','){
-            query.deleteCharAt(query.length()-1);
+        if (query.charAt(query.length() - 1) == ',') {
+            query.deleteCharAt(query.length() - 1);
         }
-        if (valuesForQuery.charAt(valuesForQuery.length()-1) == ','){
-            valuesForQuery.deleteCharAt(valuesForQuery.length()-1);
+        if (valuesForQuery.charAt(valuesForQuery.length() - 1) == ',') {
+            valuesForQuery.deleteCharAt(valuesForQuery.length() - 1);
         }
-//        String valueString = valuesForQuery.toString();
-//        String queryString = query.toString();
-//        String sql = query + ") " +
-//                valueString + ");";
         query.append(") ").append(valuesForQuery).append(");");
         System.out.println("Q in Query sample: " + query);
         return query.toString();
@@ -129,14 +119,12 @@ public class QuerySamples {
             }
         }
         //query.deleteCharAt(query.length() - 1);
-        if (query.charAt(query.length()-1) == ','){
-            query.deleteCharAt(query.length()-1);
+        if (query.charAt(query.length() - 1) == ',') {
+            query.deleteCharAt(query.length() - 1);
         }
         query.append(" WHERE id = ").append(object.getId()).append(";");
         return query.toString();
     }
-
-
 
 
     static String forUpdate(SimpleORMInterface object, int idForeignKey, String primaryTableIdName) throws IllegalAccessException {
@@ -160,16 +148,15 @@ public class QuerySamples {
                 }
 
             }
-            if(f.isAnnotationPresent(JoinColumn.class)){
+            if (f.isAnnotationPresent(JoinColumn.class)) {
                 columnName = f.getAnnotation(JoinColumn.class).name();
                 query.append(" ").append(columnName);
                 query.append(" = ").append(idForeignKey).append(",");
             }
             f.setAccessible(false);
         }
-        //query.deleteCharAt(query.length() - 1);
-        if (query.charAt(query.length()-1) == ','){
-            query.deleteCharAt(query.length()-1);
+        if (query.charAt(query.length() - 1) == ',') {
+            query.deleteCharAt(query.length() - 1);
         }
         query.append(" WHERE id = ").append(object.getId()).append(";");
         return query.toString();

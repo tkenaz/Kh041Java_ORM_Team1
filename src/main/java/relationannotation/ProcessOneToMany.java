@@ -9,7 +9,6 @@ import crud_services.SimpleORMInterface;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +38,7 @@ public class ProcessOneToMany {
         Connection connection1 = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection1, object.getClass());
         List<Object> childList = getOneToManyLists(object);
-        int primaryId = returnPrimaryKey( object);
+        int primaryId = returnPrimaryKey(object);
         String primaryTableIdName = returnPrimaryTableIdName(object);
 
 
@@ -60,7 +59,7 @@ public class ProcessOneToMany {
         Connection connection = ConnectionPoll.getConnection();
         CRUDService crudService = new CRUDService(connection, object.getClass());
         List<Object> childList = getOneToManyLists(object);
-        int primaryId = returnPrimaryKey( object);
+        int primaryId = returnPrimaryKey(object);
 
         String primaryTableIdName = returnPrimaryTableIdName(object);
 
@@ -75,12 +74,6 @@ public class ProcessOneToMany {
         }
         ConnectionPoll.releaseConnection(connection);
     }
-
-    //?
-    public static void selectOneToMany(Object object) {
-
-    }
-
 
     private static void saveOrUpdateObject(Object object, int primaryId, String primaryTableIdName) {
         Connection connection = ConnectionPoll.getConnection();
@@ -128,7 +121,7 @@ public class ProcessOneToMany {
         return id;
     }
 
-    private static String returnPrimaryTableIdName(Object object){
+    private static String returnPrimaryTableIdName(Object object) {
         String primaryTableIdName = null;
         Field[] fields = object.getClass().getDeclaredFields();
         for (Field f : fields) {
