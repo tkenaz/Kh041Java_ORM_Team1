@@ -49,6 +49,13 @@ public class processManyToOne {
         ArrayList<SimpleORMInterface> list = crudService.selectByCondition(getFKColumnName(withFieldManyToOne, fk), fk.getId());
         System.out.println(list.size());
         setUpCollectionOfObjects(fk, list);
+        for(SimpleORMInterface object : list) {
+            for (Field field : object.getClass().getDeclaredFields()) {
+                if (field.isAnnotationPresent(ManyToOne.class)) {
+                    field.set(object, fk);
+                }
+            }
+        }
 
     }
 }

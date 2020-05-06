@@ -240,9 +240,6 @@ public class CRUDService {
                 if (field.isAnnotationPresent(Column.class)) {
                     field.set(object, rs.getObject(field.getAnnotation(Column.class).name()));
                 }
-                else if(field.isAnnotationPresent(ManyToOne.class)) {
-                    field.set(object, rs.getObject(field.getAnnotation(Column.class).name()));
-                }
                 field.setAccessible(false);
             }
             list.add(object);
