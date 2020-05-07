@@ -197,7 +197,7 @@ public class SimpleORM {
 
 
 
-    /*               INTERNAL METHODS      */
+
 
     /**
      * createManyToManyTable creats a separate table for many to many
@@ -235,6 +235,8 @@ public class SimpleORM {
         ConnectionPoll.releaseConnection(connection);
     }
 
+
+    /*               INTERNAL METHODS      */
     // update internal object
     private void updateObject(Object object) {
         Connection connection = ConnectionPoll.getConnection();
