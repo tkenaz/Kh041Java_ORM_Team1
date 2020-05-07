@@ -139,18 +139,6 @@ public class CRUDService {
         }
     }
 
-    ////??? значение может быть инт и тогда кавычки не нужны
-//    void deleteByCondition(String conditionalColumnName, String conditionValue) {
-//        StringBuilder query = new StringBuilder("DELETE FROM ");
-//        query.append(tableName);
-//        query.append(" WHERE ").append(conditionalColumnName).append(" = ");
-//        query.append("'").append(conditionValue).append("';");
-//        try (PreparedStatement delete = connection.prepareStatement(query.toString());) {
-//            delete.executeUpdate();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     //Alena's selectAll
     public List<Object> selectAll(Class clazz) {
