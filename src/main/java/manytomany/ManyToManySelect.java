@@ -1,10 +1,9 @@
-package manyToMany;
+package manytomany;
 
 import annotations.Column;
 import annotations.Id;
 import annotations.ManyToMany;
 import annotations.Table;
-import crudServices.SimpleORMInterface;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -16,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static manyToMany.ManyToManyHandler.createM2MTableName;
+import static manytomany.ManyToManyHandler.createM2MTableName;
 
 public class ManyToManySelect {
     /**
@@ -38,21 +37,15 @@ public class ManyToManySelect {
         referenceClassTableName = entityClass.getAnnotation(ManyToMany.class).mappedBy();
     }
 
-    /*
-    SELECT *
-    FROM users
-	JOIN roles_users ON users.id = roles_users.userid
-	JOIN roles ON roles_users.roleid = roles.id;
-
-* */
 
     public List<Object> selectAllfromM2MTable(Class sourceClass, Class referenceClass) {
 
         ResultSet resultSet;
         List<Object> resultList = new ArrayList<>();
-        Map<String,String> sourceClassColumnsAndFields = getColumnAndFieldsNames(sourceClass);
-        Map<String,String> referenceClassColumnsAndFields = getColumnAndFieldsNames(referenceClass);
-        try (PreparedStatement select = connection.prepareStatement(createSelectAllQueryforM2MTable(sourceClass, referenceClass))) {
+        Map<String, String> sourceClassColumnsAndFields = getColumnAndFieldsNames(sourceClass);
+        Map<String, String> referenceClassColumnsAndFields = getColumnAndFieldsNames(referenceClass);
+        try (PreparedStatement select = connection.prepareStatement(
+                createSelectAllQueryforM2MTable(sourceClass, referenceClass))) {
             resultSet = select.executeQuery();
 
             try {
@@ -76,7 +69,51 @@ public class ManyToManySelect {
                     resultList.add(sourceClassObject);
                     resultList.add(referenceClassObject);
                 }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException | NoSuchFieldException  e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException
+                    | NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+            return resultList;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return resultList;
+    }
+
+    public List<Object> selectByParameterfromM2MTable(Class sourceClass, Class referenceClass,
+                                                      String fieldName, Object parameter) {
+
+        ResultSet resultSet;
+        List<Object> resultList = new ArrayList<>();
+        Map<String, String> sourceClassColumnsAndFields = getColumnAndFieldsNames(sourceClass);
+        Map<String, String> referenceClassColumnsAndFields = getColumnAndFieldsNames(referenceClass);
+        try (PreparedStatement select = connection.prepareStatement(
+                createSelectByParameterQueryforM2MTable(sourceClass, referenceClass, fieldName, parameter))) {
+            resultSet = select.executeQuery();
+
+            try {
+                while (resultSet.next()) {
+                    Object sourceClassObject = Class.forName(sourceClass.getName()).newInstance();
+                    Object referenceClassObject = Class.forName(referenceClass.getName()).newInstance();
+                    for (Map.Entry<String, String> source : sourceClassColumnsAndFields.entrySet()) {
+                        for (Map.Entry<String, String> reference : referenceClassColumnsAndFields.entrySet()) {
+                            Field sourceField = sourceClassObject.getClass().getDeclaredField(source.getKey());
+                            sourceField.setAccessible(true);
+                            sourceField.set(sourceClassObject, resultSet.getObject(source.getValue()));
+                            sourceField.setAccessible(false);
+
+                            Field referenceField = referenceClassObject.getClass().getDeclaredField(reference.getKey());
+                            referenceField.setAccessible(true);
+                            referenceField.set(referenceClassObject, resultSet.getObject(reference.getValue()));
+                            referenceField.setAccessible(false);
+                        }
+
+                    }
+                    resultList.add(sourceClassObject);
+                    resultList.add(referenceClassObject);
+                }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException
+                    | NoSuchFieldException e) {
                 e.printStackTrace();
             }
             return resultList;
@@ -87,38 +124,32 @@ public class ManyToManySelect {
     }
 
 
-    ArrayList<SimpleORMInterface> resultSetProcessing(ResultSet rs, Class<? extends SimpleORMInterface> sourceClass,
-                                                      Class<? extends SimpleORMInterface> referenceClass)
-            throws SQLException, IllegalAccessException, InstantiationException {
-        ArrayList<SimpleORMInterface> list = new ArrayList<>();
-        SimpleORMInterface sourceClassObject;
-        SimpleORMInterface referenceClassObject;
-        while (rs.next()) {
-            sourceClassObject = sourceClass.newInstance();
-            referenceClassObject = referenceClass.newInstance();
-            Field[] sourceClassFields = sourceClass.getDeclaredFields();
-            Field[] referenceClassFields = referenceClass.getDeclaredFields();
-            for (Field sourceField : sourceClassFields) {
-                for (Field referenceField : referenceClassFields) {
-
-
-                    sourceField.setAccessible(true);
-                    referenceField.setAccessible(true);
-                    if (sourceField.isAnnotationPresent(Column.class) || referenceField.isAnnotationPresent(Column.class)) {
-                        sourceField.set(sourceClassObject, rs.getObject(sourceField.getAnnotation(Column.class).name()));
-                        referenceField.set(referenceClassObject, rs.getObject(sourceField.getAnnotation(Column.class).name()));
-                    }
-                    sourceField.setAccessible(false);
-                    referenceField.setAccessible(false);
-                    }
-            }
-            list.add(sourceClassObject);
-            list.add(referenceClassObject);
-        }
-        return list;
+    public static String createSelectByParameterQueryforM2MTable(Class sourceClass, Class referenceClass,
+                                                                  String fieldName, Object parameter) {
+        StringBuilder query = new StringBuilder(createSelectAllQueryforM2MTable(sourceClass, referenceClass));
+        query.deleteCharAt(query.length()-1)
+                .append('\n')
+                .append("WHERE ")
+                .append(fieldName)
+                .append('=')
+                .append(parameter)
+                .append(';');
+        return query.toString();
     }
 
-    public static String createSelectAllQueryforM2MTable(Class sourceClass, Class referenceClass) {
+    /**
+     * Please use this additional method if the fieldName is of a composite type, i.e. "users.firstname"
+     */
+    public String composeFieldName(Class sourceClass, String fieldName) {
+
+        StringBuilder stringBuilder = new StringBuilder(sourceClass.getSimpleName().toLowerCase());
+        stringBuilder.append('.')
+                .append(fieldName);
+        return stringBuilder.toString();
+    }
+
+
+    private static String createSelectAllQueryforM2MTable(Class sourceClass, Class referenceClass) {
 
         StringBuilder query = new StringBuilder("SELECT * FROM ");
         query.append(sourceClassTableName)
@@ -146,66 +177,8 @@ public class ManyToManySelect {
                 .append(referenceClassTableName)
                 .append('.')
                 .append("id")
-                .append(';')
-        ;
-
-        System.out.println(query);
+                .append(';');
         return query.toString();
-    }
-
-    /*
-    SELECT *
-    FROM users
-	JOIN roles_users ON users.id = roles_users.userid
-	JOIN roles ON roles_users.roleid = roles.id
-	WHERE userid = 2;
-
-    * */
-    /*public Object selectById(int id, Class clazz) {
-        StringBuilder query = new StringBuilder("SELECT * FROM ");
-        query.append(sourceClassTableName).append(" WHERE id = ? ;");
-        ResultSet resultSet;
-        Object object = null;
-        try (PreparedStatement select = connection.prepareStatement(query.toString())) {
-            select.setInt(1, id);
-            System.out.println(select.toString());
-            resultSet = select.executeQuery();
-
-            object = parseResultSet(resultSet, clazz);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return object;
-    }*/
-/**/
-
-
-
-    public Object parseResultSet(ResultSet resultSet, Class clazz) {
-
-        Map<String, String> map = getColumnAndFieldsNames(clazz);
-
-        try {
-            Object object = Class.forName(clazz.getName()).newInstance();
-
-            while (resultSet.next()) {
-                for (Map.Entry<String, String> m : map.entrySet()) {
-                    Field field = object.getClass().getDeclaredField(m.getKey());
-                    field.setAccessible(true);
-                    field.set(object, resultSet.getObject(m.getValue()));
-                    field.setAccessible(false);
-                }
-            }
-            return object;
-
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | SQLException
-                | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-
     }
 
     private Map<String, String> getColumnAndFieldsNames(Class clazz) {
@@ -220,8 +193,4 @@ public class ManyToManySelect {
         }
         return map;
     }
-
-
-
-
 }

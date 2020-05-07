@@ -1,4 +1,4 @@
-package manyToMany;
+package manytomany;
 
 import annotations.ManyToMany;
 import annotations.Table;
@@ -24,6 +24,7 @@ public class ManyToManyHandler {
     private static final String CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS";
     private static final String ALTER_SQL = "ALTER TABLE";
     private static final String DROP_TABLE_SQL = "DROP TABLE %s";
+    private static final String INSERT_M2M_SQL = "INSERT INTO %s";
 
     public ManyToManyHandler(Connection connection) {
     }
@@ -55,7 +56,7 @@ public class ManyToManyHandler {
         return stringBuilder.toString();
     }
 
-    public String createForeignKeyM2MTableQuery(Class sourceClass, Class referenceClass) {
+    private String createForeignKeyM2MTableQuery(Class sourceClass, Class referenceClass) {
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(ALTER_SQL)
@@ -87,7 +88,7 @@ public class ManyToManyHandler {
         return stringBuilder.toString();
     }
 
-    public String createUniqueM2MTableQuery(Class sourceClass, Class referenceClass) {
+    private String createUniqueM2MTableQuery(Class sourceClass, Class referenceClass) {
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(ALTER_SQL)
@@ -129,11 +130,32 @@ public class ManyToManyHandler {
         return tableNames;
     }
 
-    public <T> void dropTable(Class<T> singleClass) throws SQLException {
+    public void insertM2M(Class sourceClass, int sourceClassParam, int referenceClassParam) throws SQLException {
         Connection connection = ConnectionPoll.getConnection();
         Statement statement = connection.createStatement();
-        String sqlQuery = String.format(DROP_TABLE_SQL, createM2MTableName(singleClass));
+        StringBuilder stringBuilder = new StringBuilder();
+
+        String queryBase = String.format(INSERT_M2M_SQL, createM2MTableName(sourceClass));
+        String sqlQuery = stringBuilder.append(queryBase)
+                .append('\n')
+                .append("VALUES")
+                .append('(')
+                .append(sourceClassParam)
+                .append(',')
+                .append(' ')
+                .append(referenceClassParam)
+                .append(')')
+                .append(';').toString();
         statement.executeUpdate(sqlQuery);
-        System.out.println("The table " + createM2MTableName(singleClass) + " has been dropped.");
+        System.out.println("You've successfully inserted values " + sourceClass + ", " + referenceClassParam
+                + " into table " + createM2MTableName(sourceClass));
+
+    }
+    public <T> void dropTable(Class<T> sourceClass) throws SQLException {
+        Connection connection = ConnectionPoll.getConnection();
+        Statement statement = connection.createStatement();
+        String sqlQuery = String.format(DROP_TABLE_SQL, createM2MTableName(sourceClass));
+        statement.executeUpdate(sqlQuery);
+        System.out.println("The table " + createM2MTableName(sourceClass) + " has been dropped.");
     }
 }

@@ -1,8 +1,8 @@
 package exception;
 
-public class NoPrimaryKeyException extends Exception{
+public class NoPrimaryKeyException extends Exception {
 
-    public NoPrimaryKeyException(String message){
+    public NoPrimaryKeyException(String message) {
         super(message);
     }
 }

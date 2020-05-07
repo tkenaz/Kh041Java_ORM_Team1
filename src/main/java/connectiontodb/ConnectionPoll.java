@@ -36,7 +36,7 @@ public class ConnectionPoll {
         }
     }
 
-    public static Connection generateAdditionalConnections() {
+    private static Connection generateAdditionalConnections() {
         for (int i = 0; i < INITIAL_POOL_SIZE / 2; i++) {
             connectionPoolList.add(new DBConnection().connect());
         }
@@ -47,7 +47,7 @@ public class ConnectionPoll {
 
 
     public static void releaseConnection(Connection connection) {
-        connectionPoolList.add(connection);
+        connectionPoolList.add(new DBConnection().connect());
         usedConnectionsList.remove(connection);
         if (connectionPoolList.size() > 10) {
             for (int i = 10; i < connectionPoolList.size(); i++) {
