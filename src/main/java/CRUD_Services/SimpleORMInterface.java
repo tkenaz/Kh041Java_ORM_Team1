@@ -1,4 +1,4 @@
-package crudServices;
+package CRUD_Services;
 
 public interface SimpleORMInterface {
     void setId(int id);
